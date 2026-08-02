@@ -6,7 +6,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { AuthGuard } from '@nestjs/passport';
 
 @UseGuards(AuthGuard('jwt'), RolesGuard)
-@Controller('api/asignaciones')
+@Controller('asignaciones')
 export class ReclutadorEmpresaController {
   constructor(private readonly reclutadorEmpresaService: ReclutadorEmpresaService) {}
 

@@ -39,6 +39,7 @@ export class R2StorageService {
       
       return `${this.publicUrl}/${filename}`;
     } catch (error) {
+      console.error('Error al subir archivo a R2:', error);
       throw new InternalServerErrorException('Error al subir archivo a R2');
     }
   }

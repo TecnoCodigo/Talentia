@@ -10,7 +10,7 @@ import { CvParserService } from '../cv-parser/cv-parser.service';
 import { R2StorageService } from '../storage/r2-storage.service';
 
 @UseGuards(AuthGuard('jwt'), RolesGuard)
-@Controller('api/talentos')
+@Controller('talentos')
 export class TalentosController {
   constructor(
     private readonly talentosService: TalentosService,
@@ -23,9 +23,14 @@ export class TalentosController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadCv(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('El archivo es requerido');
-    const cvData = await this.cvParserService.parseCv(file.buffer);
-    const urlCv = await this.r2StorageService.uploadFile(file);
-    return { ...cvData, urlCv };
+    try {
+      const cvData = await this.cvParserService.parseCv(file.buffer);
+      const urlCv = await this.r2StorageService.uploadFile(file);
+      return { ...cvData, urlCv };
+    } catch (error) {
+      console.error('Error procesando CV:', error);
+      throw error;
+    }
   }
 
   @Post()
