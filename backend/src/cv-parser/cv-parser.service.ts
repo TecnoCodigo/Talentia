@@ -16,7 +16,7 @@ export class CvParserService {
       const pdfData = await pdfParse(buffer);
       const text = pdfData.text;
 
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-3.1-flash' });
       
       const prompt = `Analiza el siguiente texto extraído de un CV/currículum y devuelve 
 un JSON con los siguientes campos:
@@ -40,6 +40,7 @@ ${text}`;
       
       return JSON.parse(responseText);
     } catch (error) {
+      console.error('Error al parsear el CV con la IA:', error);
       throw new InternalServerErrorException('Error al parsear el CV con la IA');
     }
   }
