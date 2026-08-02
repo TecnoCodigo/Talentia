@@ -2,14 +2,27 @@ import { Controller, Post, Body, Get, Delete, Param, Query, UseGuards, Req, Unau
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Observable } from 'rxjs';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UsersService } from '../users/users.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService
+  ) { }
 
   @Sse('events')
   sseEvents(): Observable<any> {
     return this.authService.getEventsObservable();
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('Administrador')
+  @Post('register')
+  async register(@Body() body: any) {
+    return this.usersService.create(body);
   }
 
   @Post('login')

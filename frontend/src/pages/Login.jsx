@@ -136,17 +136,14 @@ const Login = () => {
         <div className="hidden lg:flex bg-slate-50/60 p-8 sm:p-10 flex-col items-center justify-center border-l border-slate-100 relative">
           <div className="w-64 h-64 sm:w-72 sm:h-72 rounded-full bg-indigo-50/40 p-6 border border-indigo-100/50 flex items-center justify-center relative shadow-sm">
             <img
-              src="/logo.png"
-              alt="Credenly Logo"
-              className="w-full h-full object-contain"
+              alt="Talentia Logo"
+              className="w-full h-full object-cover"
             />
           </div>
-
-          <div className="mt-4 text-center max-w-xs">
-            <p className="text-xs text-slate-500">
-              Autenticación segura, información en tus manos.
-            </p>
-          </div>
+          <h1 className="mt-4 text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Talentia</h1>
+          <p className="text-xs text-slate-500">
+            Autenticación segura, información en tus manos.
+          </p>
         </div>
 
       </div>

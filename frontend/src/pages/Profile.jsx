@@ -89,12 +89,12 @@ const Profile = () => {
     <div className="min-h-screen bg-slate-100/90 text-slate-800 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
 
       <header className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between sticky top-0 z-30 shadow-sm gap-2">
-        <div className="flex items-center gap-2.5">
-          <img src="/logo.png" alt="Credenly Icon" className="w-7 h-7 sm:w-8 sm:h-8 object-contain" />
-          <div className="flex flex-col">
-            <span className="font-extrabold text-slate-900 text-sm sm:text-base leading-tight tracking-tight">
-              Credenly
-            </span>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center text-white font-bold text-xl">T</div>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-400 dark:to-blue-500 tracking-tight">
+              Talentia
+            </h1>
             <span className="hidden sm:inline text-[10px] text-slate-500 font-medium">Autenticación segura, información en tus manos.</span>
           </div>
         </div>

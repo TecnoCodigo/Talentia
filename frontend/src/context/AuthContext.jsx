@@ -91,8 +91,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const hasRole = (rolesArray) => {
+    if (!user) return false;
+    return rolesArray.includes(user.rol);
+  };
+
+  const canEditTalento = (talento) => {
+    if (!user || !talento) return false;
+    if (user.rol === 'Administrador') return true;
+    if (talento.registradoPor?.id === user.id) return true;
+    // Si viene en el payload del user (se asume que se hidrata al loguear/profile)
+    if (talento.empresa && user.empresasAsignadas) {
+      return user.empresasAsignadas.some(re => re.empresa?.id === talento.empresa.id || re.empresaId === talento.empresa.id);
+    }
+    return false;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, hasRole, canEditTalento }}>
       {children}
     </AuthContext.Provider>
   );
