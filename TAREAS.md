@@ -33,8 +33,8 @@
 - [x] 24. Implementar páginas de Reclutadores + asignación a empresas (Admin only)
 
 ## Fase 5: Branding, Documentación y Verificación
-- [ ] 25. Actualizar branding en Login, Profile, index.html (Credenly → Talentia)
-- [ ] 26. Generar logo placeholder (círculo + "T")
-- [ ] 27. Actualizar Docker Compose y .env.example
-- [ ] 28. Reescribir documentación: README, ROLES, MANUAL_USUARIO, GRUPO
-- [ ] 29. Probar flujo completo con Docker Compose
+- [x] 25. Actualizar branding en Login, Profile, index.html (Credenly → Talentia)
+- [x] 26. Generar logo placeholder (círculo + "T")
+- [x] 27. Actualizar Docker Compose y .env.example
+- [x] 28. Reescribir documentación: README, ROLES, MANUAL_USUARIO, GRUPO
+- [x] 29. Probar flujo completo con Docker Compose

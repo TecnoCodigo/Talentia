@@ -1,4 +1,4 @@
-# Credenly (PROYECTO ESTUDIANTIL UPTJAA T3-F1 IF-04)
+# Talentia (PROYECTO ESTUDIANTIL UPTJAA T3-F1 IF-04)
 
 # Datos del Grupo de Trabajo
 
