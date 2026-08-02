@@ -3,9 +3,9 @@
 -- Proyecto: Gestor de Talentos
 -- ======================================================
 
-CREATE DATABASE IF NOT EXISTS `talentia_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `sistema_autenticacion` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-USE `talentia_db`;
+USE `sistema_autenticacion`;
 
 -- ------------------------------------------------------
 -- Eliminación de tablas en orden inverso a dependencias
