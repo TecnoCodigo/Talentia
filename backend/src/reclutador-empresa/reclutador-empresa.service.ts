@@ -20,7 +20,7 @@ export class ReclutadorEmpresaService {
     const asignacion = this.reclutadorEmpresaRepository.create({
       usuario: { id: dto.usuarioId },
       empresa: { id: dto.empresaId }
-    } as any);
+    } as unknown as ReclutadorEmpresa);
 
     return this.reclutadorEmpresaRepository.save(asignacion);
   }

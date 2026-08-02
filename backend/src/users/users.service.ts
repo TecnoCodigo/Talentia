@@ -20,7 +20,7 @@ export class UsersService {
       ...createUserDto,
       clave: claveHash,
       rol: createUserDto.rol || 'Reclutador'
-    });
+    } as unknown as User);
     return this.usersRepository.save(user);
   }
 

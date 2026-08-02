@@ -18,9 +18,9 @@ export class TalentosService {
   async create(createTalentoDto: CreateTalentoDto, user: any): Promise<Talento> {
     const talento = this.talentosRepository.create({
       ...createTalentoDto,
-      empresa: createTalentoDto.empresaId ? { id: createTalentoDto.empresaId } : null,
-      registradoPor: { id: user.id }
-    } as any);
+      registradoPor: { id: user.id },
+      empresa: createTalentoDto.empresaId ? { id: createTalentoDto.empresaId } : null
+    } as unknown as Talento);
     return this.talentosRepository.save(talento);
   }
 
