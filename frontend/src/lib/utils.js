@@ -1,4 +1,3 @@
-// Clase combinator lightweight (sin dependencia externa clsx)
 export function cn(...args) {
   const classes = [];
   for (const arg of args) {

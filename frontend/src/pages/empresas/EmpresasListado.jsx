@@ -43,7 +43,6 @@ const EmpresasListado = () => {
     fetchEmpresas();
   }, [fetchEmpresas]);
 
-  // Filtro client-side por sector (el backend solo soporta pais/estado)
   const filtered = useMemo(() => {
     const sector = filters.sector?.toLowerCase().trim();
     if (!sector) return empresas;
