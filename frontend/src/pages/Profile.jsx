@@ -13,7 +13,6 @@ const Profile = () => {
   const [sesiones, setSesiones] = useState([]);
   const [loadingSesiones, setLoadingSesiones] = useState(true);
 
-  // Modal de todas las sesiones
   const [modalAbierto, setModalAbierto] = useState(false);
   const [modalSesiones, setModalSesiones] = useState([]);
   const [filtroEstado, setFiltroEstado] = useState('todas');
@@ -28,7 +27,6 @@ const Profile = () => {
       setSesiones(res.data.data || []);
       setTotalRegistros(res.data.total || 0);
     } catch (err) {
-      // silencioso
     } finally {
       setLoadingSesiones(false);
     }
@@ -45,7 +43,6 @@ const Profile = () => {
       setModalSesiones(res.data.data || []);
       setTotalPaginas(res.data.totalPages || 1);
     } catch (err) {
-      // silencioso
     } finally {
       setLoadingModal(false);
     }
@@ -76,7 +73,6 @@ const Profile = () => {
       fetchSesionesPrincipales();
       if (modalAbierto) fetchModalSesiones(filtroEstado, paginaActual);
     } catch (err) {
-      // silencioso
     }
   };
 
@@ -205,11 +201,10 @@ const Profile = () => {
             <button
               key={est}
               onClick={() => handleCambiarFiltro(est)}
-              className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold transition ${
-                filtroEstado === est
+              className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold transition ${filtroEstado === est
                   ? 'bg-brand-600 text-white shadow-sm'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'
-              }`}
+                }`}
             >
               {est === 'todas' ? 'Todas' : est === 'Activa' ? 'Activas' : 'Finalizadas'}
             </button>

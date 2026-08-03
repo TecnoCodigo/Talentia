@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
     const checkAuth = async () => {
       const token = localStorage.getItem('access_token');
       const savedUser = localStorage.getItem('user_data');
-      
+
       if (token && savedUser) {
         try {
           setUser(JSON.parse(savedUser));
@@ -28,43 +28,66 @@ export const AuthProvider = ({ children }) => {
     };
 
     checkAuth();
-
-    // Escuchar logout forzado por expiración de token (desde axiosInstance, sin hard refresh)
     const handleForcedLogout = () => {
       localStorage.clear();
       setUser(null);
     };
     window.addEventListener('auth:logout', handleForcedLogout);
 
-    // Conexión Server-Sent Events (SSE) push en lugar de polling
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-    const eventSource = new EventSource(`${API_URL}/auth/events`);
+    let retryDelay = 1000;
+    const MAX_DELAY = 30000;
+    let retryTimeout = null;
+    let es = null;
+    let destroyed = false;
 
-    eventSource.onmessage = async (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        const savedUser = localStorage.getItem('user_data');
-        if (savedUser) {
-          const u = JSON.parse(savedUser);
-          if (u.id === data.userId) {
-            // Verificar validez de la sesión de inmediato tras el evento push
-            try {
-              await api.get('/auth/profile');
-            } catch (err) {
-              if (err.response?.status === 401) {
-                localStorage.clear();
-                setUser(null);
+    const connectSSE = () => {
+      if (destroyed) return;
+
+      es = new EventSource(`${API_URL}/auth/events`);
+
+      es.onopen = () => {
+        retryDelay = 1000;
+      };
+
+      es.onmessage = async (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          const savedUser = localStorage.getItem('user_data');
+          if (savedUser) {
+            const u = JSON.parse(savedUser);
+            if (u.id === data.userId) {
+              try {
+                await api.get('/auth/profile');
+              } catch (err) {
+                if (err.response?.status === 401) {
+                  localStorage.clear();
+                  setUser(null);
+                }
               }
             }
           }
+        } catch (e) {
         }
-      } catch (e) {
-        console.warn('Error en SSE:', e);
-      }
+      };
+
+      es.onerror = () => {
+        es.close();
+        if (!destroyed) {
+          retryTimeout = setTimeout(() => {
+            retryDelay = Math.min(retryDelay * 2, MAX_DELAY);
+            connectSSE();
+          }, retryDelay);
+        }
+      };
     };
 
+    connectSSE();
+
     return () => {
-      eventSource.close();
+      destroyed = true;
+      if (retryTimeout) clearTimeout(retryTimeout);
+      if (es) es.close();
       window.removeEventListener('auth:logout', handleForcedLogout);
     };
   }, []);
@@ -110,7 +133,6 @@ export const AuthProvider = ({ children }) => {
     if (!user || !talento) return false;
     if (user.rol === 'Administrador') return true;
     if (talento.registradoPor?.id === user.id) return true;
-    // Si viene en el payload del user (se asume que se hidrata al loguear/profile)
     if (talento.empresa && user.empresasAsignadas) {
       return user.empresasAsignadas.some(re => re.empresa?.id === talento.empresa.id || re.empresaId === talento.empresa.id);
     }

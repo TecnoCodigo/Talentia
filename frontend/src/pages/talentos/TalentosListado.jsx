@@ -43,7 +43,6 @@ const TalentosListado = () => {
     fetchTalentos();
   }, [fetchTalentos]);
 
-  // Filtro client-side por especialidad (el backend recibe estadoLaboral y otros por query)
   const filtered = useMemo(() => {
     const esp = filters.especialidad?.toLowerCase().trim();
     if (!esp) return talentos;
