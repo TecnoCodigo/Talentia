@@ -1,19 +1,19 @@
 version: '3.8'
 
-# ======================================================
-# Talentia - Orquestación local multi-contenedor
-# ======================================================
-
 services:
   mysql_db:
     image: mysql:8.0
     container_name: talentia_mysql_db
     restart: always
+    command: >-
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --skip-character-set-client-handshake
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: talentia_db
-      MYSQL_USER: talentia_user
-      MYSQL_PASSWORD: talentia_password
+      MYSQL_DATABASE: sistema_autenticacion
+      MYSQL_USER: credenly_user
+      MYSQL_PASSWORD: credenly_password
     ports:
       - "3306:3306"
     volumes:
@@ -34,11 +34,11 @@ services:
       PORT: 4000
       DB_HOST: mysql_db
       DB_PORT: 3306
-      DB_USER: talentia_user
-      DB_PASSWORD: talentia_password
-      DB_NAME: talentia_db
-      JWT_ACCESS_SECRET: supersecret_access_key_p4_2026
-      JWT_REFRESH_SECRET: supersecret_refresh_key_p4_2026
+      DB_USER: credenly_user
+      DB_PASSWORD: credenly_password
+      DB_NAME: sistema_autenticacion
+      JWT_ACCESS_SECRET: supersecret_access_key_talentia_2026
+      JWT_REFRESH_SECRET: supersecret_refresh_key_talentia_2026
       JWT_ACCESS_EXPIRATION: 900s
       JWT_REFRESH_EXPIRATION: 7d
       GEMINI_API_KEY: ${GEMINI_API_KEY}

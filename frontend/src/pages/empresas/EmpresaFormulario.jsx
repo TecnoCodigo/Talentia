@@ -7,9 +7,9 @@ import { Building2 } from 'lucide-react';
 import api from '../../api/axiosInstance';
 import { createEmpresaSchema, updateEmpresaSchema } from '../../lib/schemas/empresa.schema';
 import { mapApiErrors, applyServerErrors } from '../../lib/mapApiErrors';
-import FormField from '../../components/ui/FormField';
-import Button from '../../components/ui/Button';
-import Spinner from '../../components/ui/Spinner';
+import FormField from '../../components/UI/FormField';
+import Button from '../../components/UI/Button';
+import Spinner from '../../components/UI/Spinner';
 
 const baseFields = {
   nombre: '', rif: '', sector: '', correoContacto: '', telefono: '',

@@ -1,6 +1,6 @@
 import { Inbox, Eye, Edit2, Trash2 } from 'lucide-react';
-import Skeleton from '../ui/Skeleton';
-import EmptyState from '../ui/EmptyState';
+import Skeleton from '../UI/Skeleton';
+import EmptyState from '../UI/EmptyState';
 
 const DataTable = ({ columns, data, isLoading, onEdit, onDelete, onView, emptyMessage = 'No hay datos disponibles' }) => {
   const hasActions = Boolean(onEdit || onDelete || onView);

@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import PageLoader from './ui/PageLoader';
+import PageLoader from './UI/PageLoader';
 import Unauthorized from '../pages/Unauthorized';
 
 const ProtectedRoute = ({ children, roles }) => {

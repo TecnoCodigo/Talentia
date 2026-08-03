@@ -16,6 +16,12 @@ export class ReclutadorEmpresaController {
     return this.reclutadorEmpresaService.asignar(dto);
   }
 
+  @Post('multiple')
+  @Roles('Administrador')
+  asignarMultiple(@Body() body: { usuarioId: number; empresaIds: number[] }) {
+    return this.reclutadorEmpresaService.asignarMultiple(body.usuarioId, body.empresaIds);
+  }
+
   @Get(':userId')
   @Roles('Administrador')
   findByUsuario(@Param('userId') userId: string) {

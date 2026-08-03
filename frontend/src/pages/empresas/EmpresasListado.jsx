@@ -4,9 +4,9 @@ import api from '../../api/axiosInstance';
 import DataTable from '../../components/UI/DataTable';
 import FilterBar from '../../components/UI/FilterBar';
 import ConfirmModal from '../../components/UI/ConfirmModal';
-import ErrorState from '../../components/ui/ErrorState';
-import Badge from '../../components/ui/Badge';
-import Pagination from '../../components/ui/Pagination';
+import ErrorState from '../../components/UI/ErrorState';
+import Badge from '../../components/UI/Badge';
+import Pagination from '../../components/UI/Pagination';
 import { useAuth } from '../../context/AuthContext';
 import { Plus } from 'lucide-react';
 

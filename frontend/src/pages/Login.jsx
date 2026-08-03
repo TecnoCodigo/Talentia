@@ -5,8 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { AlertCircle, ShieldCheck, User, KeyRound } from 'lucide-react';
 import { loginSchema } from '../lib/schemas/auth.schema';
 import { mapApiErrors, applyServerErrors } from '../lib/mapApiErrors';
-import FormField from '../components/ui/FormField';
-import Button from '../components/ui/Button';
+import FormField from '../components/UI/FormField';
+import Button from '../components/UI/Button';
 
 const Login = () => {
   const { login } = useAuth();
@@ -122,13 +122,10 @@ const Login = () => {
         </div>
 
         <div className="relative hidden flex-col items-center justify-center border-l border-slate-100 bg-slate-50/60 p-8 dark:border-slate-800 dark:bg-slate-800/40 lg:flex sm:p-10">
-          <div className="flex h-64 w-64 items-center justify-center rounded-full border border-brand-200/50 bg-brand-50/40 p-6 shadow-sm dark:border-brand-800/50 dark:bg-brand-900/20 sm:h-72 sm:w-72">
-            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-brand-600 text-3xl font-bold text-white shadow-lg">
-              T
-            </div>
+          <div className="mb-6 flex items-center justify-center">
+            <img src="/logo_full.png" alt="Talentia" className="h-44 w-auto max-w-sm object-contain drop-shadow-md dark:brightness-110" />
           </div>
-          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Talentia</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">Autenticación segura, información en tus manos.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 text-center">Autenticación segura, información en tus manos.</p>
         </div>
       </div>
     </div>

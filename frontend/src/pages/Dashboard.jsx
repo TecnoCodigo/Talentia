@@ -3,9 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosInstance';
 import StatsCard from '../components/UI/StatsCard';
 import DataTable from '../components/UI/DataTable';
-import Skeleton from '../components/ui/Skeleton';
-import ErrorState from '../components/ui/ErrorState';
-import Badge from '../components/ui/Badge';
+import Skeleton from '../components/UI/Skeleton';
+import ErrorState from '../components/UI/ErrorState';
+import Badge from '../components/UI/Badge';
 import { Users, Building2, UserCheck, Briefcase } from 'lucide-react';
 
 const Dashboard = () => {
@@ -30,7 +30,12 @@ const Dashboard = () => {
         activos: talentos.filter((t) => t.estadoLaboral === 'Disponible').length,
         misTalentos: talentos.filter((t) => t.registradoPor?.id === user?.id).length,
       });
-      setRecent(talentos.slice(0, 5));
+      const sorted = [...talentos].sort((a, b) => {
+        const dateA = a.creadoEn ? new Date(a.creadoEn).getTime() : a.id;
+        const dateB = b.creadoEn ? new Date(b.creadoEn).getTime() : b.id;
+        return dateB - dateA;
+      });
+      setRecent(sorted.slice(0, 5));
     } catch (err) {
       setError('No se pudo cargar la información del panel.');
     } finally {

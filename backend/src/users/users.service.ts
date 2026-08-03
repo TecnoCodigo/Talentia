@@ -30,7 +30,26 @@ export class UsersService {
   }
 
   async findAll(): Promise<User[]> {
-    return this.usersRepository.find({ select: ['id', 'usuario', 'nombre', 'correo', 'telefono', 'rol', 'estado', 'creadoEn'] });
+    return this.usersRepository.find({
+      relations: ['empresasAsignadas', 'empresasAsignadas.empresa'],
+      select: {
+        id: true,
+        usuario: true,
+        nombre: true,
+        correo: true,
+        telefono: true,
+        rol: true,
+        estado: true,
+        creadoEn: true,
+        empresasAsignadas: {
+          id: true,
+          empresa: {
+            id: true,
+            nombre: true,
+          },
+        },
+      },
+    });
   }
 
   async findByUsuario(usuario: string): Promise<User | null> {

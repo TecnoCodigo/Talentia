@@ -13,25 +13,27 @@
 ### 1. Administrador de Base de Datos (DBA)
 - **Responsabilidades:** 
   - Diseñar el modelo relacional de 5 tablas en MySQL 8.0: `usuarios`, `sesiones`, `empresas`, `talentos` y `reclutador_empresa` (relación Many-to-Many reclutador↔empresa).
-  - Generar el script DDL/DML `doc/database.sql` con restricciones de unicidad, claves foráneas, enums (`estado_laboral`, `estado` de empresa/usuario) e inserción de datos iniciales (3 usuarios, 3 empresas, 5 talentos, 3 asignaciones).
-  - Asegurar la persistencia e integridad de datos en el entorno local (Docker) y en producción (MySQL en Compute Engine).
+  - Generar el script DDL/DML `doc/database.sql` con restricciones de unicidad, claves foráneas, enums (`estado_laboral`, `estado` de empresa/usuario) e inserción de datos iniciales.
+  - Asegurar la persistencia e integridad de datos en el entorno local (Docker) y en producción (MySQL en Google Cloud).
 
 ### 2. Desarrollador Backend (NestJS / Node.js & ORM)
 - **Responsabilidades:**
   - Configuración de la conexión a MySQL 8.0 usando **TypeORM / NestJS**.
   - Implementación de la autenticación con contraseñas encriptadas (`bcrypt`) y emisión, verificación y rotación de tokens seguros (`access_token` JWT corta duración + `refresh_token` larga duración).
   - CRUD completo de `empresas`, `talentos` y `reclutador_empresa` con Guards por rol (`@Roles('Administrador')` / `@Roles('Reclutador')`).
-  - Lógica de permisos por grupos: el reclutador solo edita talentos que creó o de empresas asignadas.
-  - **DTOs con class-validator** (validación server-side con mensajes en español) para todos los endpoints de auth, users, empresas, talentos y asignaciones.
+  - **Asignación Multiempresa**: Endpoints y servicios (`POST /asignaciones/multiple`) para vincular reclutadores a más de una empresa simultáneamente.
+  - Lógica de permisos por grupos: el reclutador sólo edita talentos que creó o de empresas asignadas.
+  - **DTOs con class-validator** (validación server-side con mensajes claros en español).
   - Integración con **Google Gemini API** para extracción de datos de CVs en PDF.
-  - Integración con **Cloudflare R2** (storage compatible S3) para alojar los PDFs.
+  - Integración con **Cloudflare R2** (storage compatible S3) generando **URLs prefirmadas temporales de lectura** para la previsualización segura de CVs.
   - Endpoints REST protegidos con Guards/Middleware y SSE para logout push en tiempo real.
 
 ### 3. Desarrollador UI (Frontend React)
 - **Responsabilidades:**
-  - Maquetación y diseño en **React + Vite + TailwindCSS** de 18+ páginas: Dashboard, Talentos (listado, detalle, formulario, cargar CV), Empresas (listado, detalle, formulario), Reclutadores (listado, formulario), Perfil, Login, NotFound y Unauthorized.
+  - Maquetación y diseño en **React + Vite + TailwindCSS** de 18+ páginas: Dashboard, Talentos (listado, detalle, formulario, cargar CV), Empresas (listado, detalle, formulario), Reclutadores (listado, formulario con selección multiempresa por checkboxes), Perfil, Login, NotFound y Unauthorized.
   - Componentes UI reutilizables: `Button`, `Input`, `FormField`, `DataTable`, `FilterBar`, `Pagination`, `Modal`, `ConfirmModal`, `Badge`, `Spinner`, `Skeleton`, `EmptyState`, `ErrorState`.
-  - Validación declarativa de formularios con **react-hook-form + zod** (esquemas espejo de los DTOs del backend) con errores field-level accesibles.
+  - Integración de **Gestor de CVs intuitivo**: Selector/Previsualizador de PDF con opciones de cambiar, ver mediante presigned URL o quitar CV de forma opcional.
+  - Validación declarativa de formularios con **react-hook-form + zod** indicando claramente campos obligatorios (`*`) y opcionales (`(Opcional)`), eliminando errores genéricos.
   - Interceptores HTTP (Axios) para adjuntar tokens, refrescar sesión automáticamente y manejar logout por expiración.
   - Modo oscuro con `ThemeContext` y persistencia en localStorage.
 

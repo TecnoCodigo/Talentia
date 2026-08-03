@@ -32,7 +32,12 @@ export default function FormField({
     <div className={cn('w-full', className)}>
       {label && (
         <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
-          {label} {required && <span className="text-rose-500">*</span>}
+          {label}{' '}
+          {required ? (
+            <span className="font-semibold text-rose-500" title="Campo obligatorio">*</span>
+          ) : (
+            <span className="text-xs font-normal text-slate-400 dark:text-slate-500">(Opcional)</span>
+          )}
         </label>
       )}
       {typeof children === 'function' ? children(passThrough) : children}

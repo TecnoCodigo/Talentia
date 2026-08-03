@@ -18,8 +18,9 @@ export class CvParserService {
 
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
       
-      const prompt = `Analiza el siguiente texto extraído de un CV/currículum y devuelve 
-un JSON con los siguientes campos:
+      const prompt = `Analiza el siguiente texto extraído de un CV/currículum y extrae la información solicitada.
+Calcula o extrae los años totales de experiencia (debe ser un número entero).
+Devuelve el resultado como un JSON con la siguiente estructura exacta:
 {
   "nombre_completo": "",
   "correo": "",
@@ -27,10 +28,10 @@ un JSON con los siguientes campos:
   "especialidad": "",
   "pais": "",
   "ciudad": "",
-  "experiencia_anios": 0,
+  "experiencia_anios": 0, // Reemplaza este 0 por el total de años de experiencia encontrados en el CV (número entero)
   "resumen": "" // máximo 300 caracteres
 }
-Si no encuentras un campo, déjalo como null. Asegúrate de devolver SOLO un JSON válido, sin formato markdown extra.
+Si no encuentras algún campo, déjalo como null. Asegúrate de devolver SOLO un JSON válido, sin formato markdown extra ni explicaciones.
 
 Texto del CV:
 ${text}`;

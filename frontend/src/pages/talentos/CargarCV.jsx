@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../api/axiosInstance';
 import toast from 'react-hot-toast';
 import { UploadCloud, File, FileWarning } from 'lucide-react';
-import Spinner from '../../components/ui/Spinner';
-import ErrorState from '../../components/ui/ErrorState';
+import Spinner from '../../components/UI/Spinner';
+import ErrorState from '../../components/UI/ErrorState';
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 

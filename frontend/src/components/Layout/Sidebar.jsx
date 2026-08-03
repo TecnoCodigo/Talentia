@@ -24,9 +24,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
       <aside className={`fixed left-0 top-0 z-50 flex h-screen w-64 flex-col bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-r border-slate-200/60 dark:border-slate-800 transition-transform duration-300 ease-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex h-16 items-center justify-between px-6 border-b border-slate-200/60 dark:border-slate-800">
-          <NavLink to="/dashboard" className="group flex items-center gap-2 transition-transform hover:scale-105">
-            <img src="/logo.svg" alt="Talentia" className="h-8 w-8" />
-            <span className="bg-gradient-to-r from-brand-600 to-blue-600 bg-clip-text text-xl font-bold tracking-tight text-transparent dark:from-brand-400 dark:to-blue-500">Talentia</span>
+          <NavLink to="/dashboard" className="group flex items-center transition-transform hover:scale-105">
+            <img src="/logo_full.png" alt="Talentia" className="h-10 w-auto object-contain dark:brightness-110" />
           </NavLink>
           <button className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800 lg:hidden" onClick={() => setSidebarOpen(false)} aria-label="Cerrar menú lateral">
             <X size={20} aria-hidden="true" />

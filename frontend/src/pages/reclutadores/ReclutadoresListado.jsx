@@ -4,9 +4,9 @@ import toast from 'react-hot-toast';
 import api from '../../api/axiosInstance';
 import DataTable from '../../components/UI/DataTable';
 import FilterBar from '../../components/UI/FilterBar';
-import ErrorState from '../../components/ui/ErrorState';
-import Badge from '../../components/ui/Badge';
-import Pagination from '../../components/ui/Pagination';
+import ErrorState from '../../components/UI/ErrorState';
+import Badge from '../../components/UI/Badge';
+import Pagination from '../../components/UI/Pagination';
 import { Plus } from 'lucide-react';
 
 const PAGE_SIZE = 10;
@@ -93,6 +93,24 @@ const ReclutadoresListado = () => {
               { label: 'Nombre', key: 'nombre' },
               { label: 'Usuario', key: 'usuario' },
               { label: 'Correo', key: 'correo' },
+              {
+                label: 'Empresas Asignadas',
+                render: (row) => {
+                  const empresas = row.empresasAsignadas?.map((ea) => ea.empresa?.nombre).filter(Boolean) || [];
+                  if (empresas.length === 0) {
+                    return <span className="text-xs italic text-slate-400">Sin asignar</span>;
+                  }
+                  return (
+                    <div className="flex flex-wrap gap-1">
+                      {empresas.map((nombre, i) => (
+                        <Badge key={i} tone="info">
+                          {nombre}
+                        </Badge>
+                      ))}
+                    </div>
+                  );
+                },
+              },
               {
                 label: 'Estado',
                 render: (row) => (

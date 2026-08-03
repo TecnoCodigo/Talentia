@@ -4,13 +4,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { IMaskInput } from 'react-imask';
 import toast from 'react-hot-toast';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Building2 } from 'lucide-react';
 import api from '../../api/axiosInstance';
-import { registerReclutadorSchema, asignarReclutadorSchema } from '../../lib/schemas/reclutador.schema';
+import { registerReclutadorSchema } from '../../lib/schemas/reclutador.schema';
 import { mapApiErrors, applyServerErrors } from '../../lib/mapApiErrors';
-import FormField from '../../components/ui/FormField';
-import Button from '../../components/ui/Button';
-import Spinner from '../../components/ui/Spinner';
+import FormField from '../../components/UI/FormField';
+import Button from '../../components/UI/Button';
+import Spinner from '../../components/UI/Spinner';
 
 const ReclutadorFormulario = () => {
   const navigate = useNavigate();
@@ -20,14 +20,18 @@ const ReclutadorFormulario = () => {
     register,
     handleSubmit,
     setError,
+    setValue,
+    watch,
     control,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(registerReclutadorSchema),
     defaultValues: {
-      nombre: '', usuario: '', correo: '', telefono: '', clave: '', empresaId: '',
+      nombre: '', usuario: '', correo: '', telefono: '', clave: '', empresaIds: [],
     },
   });
+
+  const selectedEmpresaIds = watch('empresaIds') || [];
 
   useEffect(() => {
     api
@@ -39,27 +43,24 @@ const ReclutadorFormulario = () => {
 
   const onSubmit = async (values) => {
     try {
-      const { empresaId, ...userPayload } = values;
+      const { empresaIds, ...userPayload } = values;
       const res = await api.post('/auth/register', { ...userPayload, rol: 'Reclutador' });
       const newUserId = res.data.id;
 
-      if (empresaId) {
-        const parsed = asignarReclutadorSchema.safeParse({
-          usuarioId: newUserId,
-          empresaId: Number(empresaId),
-        });
-        if (parsed.success) {
-          try {
-            await api.post('/asignaciones', parsed.data);
-          } catch {
-            toast.success('Reclutador creado, pero no se pudo asignar a la empresa. Puedes intentarlo desde el listado.');
-            navigate('/reclutadores');
-            return;
-          }
+      if (Array.isArray(empresaIds) && empresaIds.length > 0) {
+        try {
+          await api.post('/asignaciones/multiple', {
+            usuarioId: newUserId,
+            empresaIds: empresaIds.map(Number),
+          });
+        } catch {
+          toast.success('Reclutador registrado, pero hubo un problema al asignar algunas empresas.');
+          navigate('/reclutadores');
+          return;
         }
       }
 
-      toast.success('Reclutador registrado y asignado');
+      toast.success('Reclutador registrado correctamente');
       navigate('/reclutadores');
     } catch (err) {
       const mapped = mapApiErrors(err);
@@ -130,14 +131,52 @@ const ReclutadorFormulario = () => {
             {(props) => <input type="password" {...register('clave')} {...props} className={inputClass} />}
           </FormField>
 
-          <FormField name="empresaId" label="Asignar a Empresa (Opcional)" error={errors.empresaId} className="md:col-span-2">
-            {(props) => (
-              <select {...register('empresaId')} {...props} className={inputClass}>
-                <option value="">No asignar de inmediato</option>
-                {empresas.map((e) => (
-                  <option key={e.id} value={e.id}>{e.nombre}</option>
-                ))}
-              </select>
+          <FormField name="empresaIds" label="Asignar a Empresas" error={errors.empresaIds} className="md:col-span-2">
+            {() => (
+              <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-800/40">
+                <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+                  Selecciona las empresas que este reclutador gestionará:
+                </p>
+                {empresas.length === 0 ? (
+                  <p className="text-xs italic text-slate-400">No hay empresas registradas para asignar.</p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                    {empresas.map((e) => {
+                      const isChecked = selectedEmpresaIds.includes(e.id);
+                      return (
+                        <label
+                          key={e.id}
+                          className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
+                            isChecked
+                              ? 'border-brand-500 bg-brand-50/60 dark:border-brand-500 dark:bg-brand-900/30'
+                              : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(evt) => {
+                              if (evt.target.checked) {
+                                setValue('empresaIds', [...selectedEmpresaIds, e.id]);
+                              } else {
+                                setValue(
+                                  'empresaIds',
+                                  selectedEmpresaIds.filter((id) => id !== e.id)
+                                );
+                              }
+                            }}
+                            className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                          />
+                          <div className="flex items-center gap-2">
+                            <Building2 size={16} className="text-slate-400" />
+                            <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{e.nombre}</span>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             )}
           </FormField>
         </div>

@@ -25,6 +25,26 @@ export class ReclutadorEmpresaService {
     return this.reclutadorEmpresaRepository.save(asignacion);
   }
 
+  async asignarMultiple(usuarioId: number, empresaIds: number[]): Promise<ReclutadorEmpresa[]> {
+    if (!Array.isArray(empresaIds) || empresaIds.length === 0) return [];
+    const asignaciones: ReclutadorEmpresa[] = [];
+    for (const empresaId of empresaIds) {
+      const existe = await this.reclutadorEmpresaRepository.findOne({
+        where: { usuario: { id: usuarioId }, empresa: { id: empresaId } }
+      });
+      if (!existe) {
+        const asignacion = this.reclutadorEmpresaRepository.create({
+          usuario: { id: usuarioId },
+          empresa: { id: empresaId }
+        } as unknown as ReclutadorEmpresa);
+        asignaciones.push(await this.reclutadorEmpresaRepository.save(asignacion));
+      } else {
+        asignaciones.push(existe);
+      }
+    }
+    return asignaciones;
+  }
+
   async findByUsuario(usuarioId: number): Promise<ReclutadorEmpresa[]> {
     return this.reclutadorEmpresaRepository.find({
       where: { usuario: { id: usuarioId } },

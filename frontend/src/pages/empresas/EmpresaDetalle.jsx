@@ -3,9 +3,9 @@ import { useParams, Link } from 'react-router-dom';
 import api from '../../api/axiosInstance';
 import { Building2, Mail, Phone, MapPin, Globe, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import Skeleton from '../../components/ui/Skeleton';
-import ErrorState from '../../components/ui/ErrorState';
-import Badge from '../../components/ui/Badge';
+import Skeleton from '../../components/UI/Skeleton';
+import ErrorState from '../../components/UI/ErrorState';
+import Badge from '../../components/UI/Badge';
 
 const EmpresaDetalle = () => {
   const { id } = useParams();

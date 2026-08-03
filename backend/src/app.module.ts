@@ -33,6 +33,7 @@ import { ReclutadorEmpresaModule } from './reclutador-empresa/reclutador-empresa
         password: config.get<string>('DB_PASSWORD', 'talentia_password'),
         database: config.get<string>('DB_NAME', 'talentia_db'),
         entities: [User, Session, Empresa, Talento, ReclutadorEmpresa],
+        charset: 'utf8mb4_unicode_ci',
         synchronize: false,
         retryAttempts: 30, // Espera hasta 90 segundos a que la BD inicie
       }),

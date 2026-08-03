@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosInstance';
 import Modal from '../components/UI/Modal';
-import Pagination from '../components/ui/Pagination';
-import Badge from '../components/ui/Badge';
-import Spinner from '../components/ui/Spinner';
-import EmptyState from '../components/ui/EmptyState';
+import Pagination from '../components/UI/Pagination';
+import Badge from '../components/UI/Badge';
+import Spinner from '../components/UI/Spinner';
+import EmptyState from '../components/UI/EmptyState';
 import { Mail, Phone, Shield, Calendar, Monitor, Smartphone, Globe, Clock, ShieldCheck, Trash2, Filter } from 'lucide-react';
 
 const Profile = () => {

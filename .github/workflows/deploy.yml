@@ -62,14 +62,15 @@ jobs:
 
       - name: Build and Push Backend Image
         run: |
-          docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/credenly-repo/backend:latest ./backend
-          docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/credenly-repo/backend:latest
+          docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/credenly-repo/talentia-backend:latest ./backend
+          docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/credenly-repo/talentia-backend:latest
 
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy credenly-backend-nestjs \
-            --image us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/credenly-repo/backend:latest \
+          gcloud run deploy talentia-backend-nestjs \
+            --image us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/credenly-repo/talentia-backend:latest \
             --region us-central1 \
+            --set-env-vars "^;^NODE_ENV=production;PORT=4000;DB_HOST=${{ secrets.DB_HOST }};DB_PORT=${{ secrets.DB_PORT }};DB_USER=${{ secrets.DB_USER }};DB_PASSWORD=${{ secrets.DB_PASSWORD }};DB_NAME=${{ secrets.DB_NAME }};JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }};JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }};JWT_ACCESS_EXPIRATION=15m;JWT_REFRESH_EXPIRATION=7d;FRONTEND_URL=${{ secrets.FRONTEND_URL }};GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }};R2_ACCOUNT_ID=${{ secrets.R2_ACCOUNT_ID }};R2_ACCESS_KEY_ID=${{ secrets.R2_ACCESS_KEY_ID }};R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }};R2_BUCKET_NAME=${{ secrets.R2_BUCKET_NAME }};R2_PUBLIC_URL=${{ secrets.R2_PUBLIC_URL }}" \
             --quiet
 
   # 3. Despliegue del Frontend (Solo si cambió frontend o infra)
@@ -77,7 +78,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Build & Deploy Frontend
     needs: [changes, deploy-infra-and-backend]
-    # Ejecutar si hubo cambios relevantes, PERO asegurar que el backend no haya fallado
     if: |
       always() && 
       (needs.changes.outputs.frontend == 'true' || needs.changes.outputs.infra == 'true') && 

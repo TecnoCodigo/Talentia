@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ShieldOff, Home } from 'lucide-react';
-import Button from '../components/ui/Button';
+import Button from '../components/UI/Button';
 import { useAuth } from '../context/AuthContext';
 
 export default function Unauthorized() {

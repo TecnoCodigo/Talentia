@@ -4,6 +4,9 @@
 -- Motor: MySQL 8.0
 -- ======================================================
 
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
 CREATE DATABASE IF NOT EXISTS `talentia_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 USE `talentia_db`;
@@ -113,19 +116,19 @@ INSERT INTO `usuarios` (`id`, `usuario`, `clave`, `nombre`, `correo`, `telefono`
 (2, 'recruiter1', '$2b$10$3Spkg63edAoyiHesqn3KdOAyHK5HzOyhIN798cLA4ugSCAW1bINl2', 'Reclutador Uno', 'recruiter1@talentia.com', '+58 412-1111111', 'Reclutador', 'Activo', '2026-08-01 10:05:00'),
 (3, 'recruiter2', '$2b$10$3Spkg63edAoyiHesqn3KdOAyHK5HzOyhIN798cLA4ugSCAW1bINl2', 'Reclutador Dos', 'recruiter2@talentia.com', '+58 424-2222222', 'Reclutador', 'Activo', '2026-08-01 10:10:00');
 
-INSERT INTO `empresas` (`id`, `nombre`, `sector`, `pais`, `estado`, `responsable`) VALUES 
-(1, 'TechVenezuela C.A.', 'Tecnología', 'Venezuela', 'Activa', 'María González'),
-(2, 'Consulting Group', 'Consultoría', 'Colombia', 'Activa', 'Juan Rodríguez'),
-(3, 'DataSoft Inc.', 'Software', 'Argentina', 'Activa', 'Pedro Martínez');
+INSERT INTO `empresas` (`id`, `nombre`, `sector`, `pais`, `estado`, `responsable`, `creado_en`) VALUES 
+(1, 'TechVenezuela C.A.', 'Tecnología', 'Venezuela', 'Activa', 'María González', '2026-08-01 10:00:00'),
+(2, 'Consulting Group', 'Consultoría', 'Colombia', 'Activa', 'Juan Rodríguez', '2026-08-01 10:05:00'),
+(3, 'DataSoft Inc.', 'Software', 'Argentina', 'Activa', 'Pedro Martínez', '2026-08-01 10:10:00');
 
 INSERT INTO `reclutador_empresa` (`usuario_id`, `empresa_id`) VALUES 
 (2, 1),
 (2, 2),
 (3, 3);
 
-INSERT INTO `talentos` (`nombre_completo`, `correo`, `telefono`, `especialidad`, `estado_laboral`, `pais`, `experiencia_anios`, `empresa_id`, `registrado_por`) VALUES 
-('Juan Pérez', 'juan.perez@email.com', '+58 414-1234567', 'Desarrollo Frontend', 'Disponible', 'Venezuela', 3, 1, 2),
-('Ana Gómez', 'ana.gomez@email.com', '+57 300-7654321', 'Análisis de Datos', 'Empleado', 'Colombia', 5, 2, 2),
-('Luis Silva', 'luis.silva@email.com', '+54 11-12345678', 'Desarrollo Backend', 'Freelance', 'Argentina', 7, 3, 3),
-('María Fernández', 'maria.fer@email.com', '+58 412-9876543', 'Diseño UX/UI', 'No Disponible', 'Venezuela', 2, 1, 2),
-('Carlos Ruiz', 'carlos.ruiz@email.com', '+58 424-5556677', 'DevOps', 'Disponible', 'Venezuela', 4, NULL, 1);
+INSERT INTO `talentos` (`id`, `nombre_completo`, `correo`, `telefono`, `especialidad`, `estado_laboral`, `pais`, `experiencia_anios`, `empresa_id`, `registrado_por`, `creado_en`) VALUES 
+(1, 'Juan Pérez', 'juan.perez@email.com', '+58 414-1234567', 'Desarrollo Frontend', 'Disponible', 'Venezuela', 3, 1, 2, '2026-08-01 10:00:00'),
+(2, 'Ana Gómez', 'ana.gomez@email.com', '+57 300-7654321', 'Análisis de Datos', 'Empleado', 'Colombia', 5, 2, 2, '2026-08-01 10:15:00'),
+(3, 'Luis Silva', 'luis.silva@email.com', '+54 11-12345678', 'Desarrollo Backend', 'Freelance', 'Argentina', 7, 3, 3, '2026-08-01 10:30:00'),
+(4, 'María Fernández', 'maria.fer@email.com', '+58 412-9876543', 'Diseño UX/UI', 'No Disponible', 'Venezuela', 2, 1, 2, '2026-08-01 10:45:00'),
+(5, 'Carlos Ruiz', 'carlos.ruiz@email.com', '+58 424-5556677', 'DevOps', 'Disponible', 'Venezuela', 4, NULL, 1, '2026-08-01 11:00:00');
