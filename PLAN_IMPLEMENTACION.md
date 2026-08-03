@@ -522,3 +522,38 @@ Se incluirán talentos asignados a las empresas de prueba con diferentes estados
 6. Permisos: reclutador edita solo sus talentos y los de empresas asignadas
 7. Registro Reclutador: admin crea cuenta → reclutador inicia sesión
 8. Responsive: probar 320px+, 768px+, 1024px+
+
+---
+
+## Apéndice — Mejora UI/UX
+
+Tras completar las 5 fases originales, se ejecutó una segunda iteración enfocada en UX/UI y validación full-stack.
+
+### Stack añadido
+- `react-hook-form` + `zod` + `@hookform/resolvers` — validación declarativa del frontend, con esquemas espejo 1:1 de los DTOs class-validator del backend.
+- `@headlessui/react` — `Dialog` y `Menu` accesibles (focus trap, Escape, ARIA) para modales y dropdowns.
+- `tailwindcss-animate` — plugin que habilita `animate-in`/`animate-out` y keyframes (`fadeIn`, `scaleIn`).
+
+### Decisiones de diseño
+- Paleta `brand` (cyan completa 50–900) como única fuente de verdad; el Login se migró de `indigo` a `brand`.
+- `darkMode: 'class'` con `ThemeContext` persistido en `localStorage`, toggle en el Header.
+- Componentes UI base: `Button`, `Input`, `FormField`, `Spinner`, `Skeleton`, `PageLoader`, `EmptyState`, `ErrorState`, `Badge`, `Pagination`.
+- Esquemas zod en `src/lib/schemas/` (auth, empresa, talento, reclutador) con mensajes en español idénticos a los del backend.
+
+### Backend — DTOs completados
+Se crearon DTOs con class-validator donde antes se usaba `any`:
+- `auth/dto/login.dto.ts`, `register.dto.ts`, `refresh-token.dto.ts`
+- `users/dto/create-user.dto.ts`, `update-user.dto.ts`, `update-estado.dto.ts`
+- `ValidationPipe` global endurecido: `whitelist: true`, `forbidNonWhitelisted: true`, `transform: true`.
+
+### Accesibilidad
+- `aria-label` en botones icono, `role="alert"` en errores field-level, `aria-invalid`/`aria-describedby` en inputs.
+- Modales con focus trap y restauración de foco (Headless UI Dialog).
+- Link "saltar al contenido" en el layout.
+- Páginas `NotFound` (404) y `Unauthorized` (acceso restringido por rol).
+
+### Cierre de pendientes (Fase 7)
+- Branding visible: `docker-compose.yml`, `package.json` y `.env.example` renombrados de Credenly/sistema_autenticacion a Talentia/talentia_db.
+- `doc/database.sql` sincronizado con los DTOs (BD renombrada a `talentia_db`, `telefono` de `usuarios` ahora `NULL` para alinearse con `RegisterDto`).
+- `.gitignore` reforzado (`.env.local`, `*.tfstate`, `*.pem`, `.terraform/`).
+- Documentación (README, MANUAL_USUARIO, GRUPO, ROLES) reescrita para Talentia.

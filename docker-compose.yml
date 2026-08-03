@@ -1,28 +1,32 @@
 version: '3.8'
 
+# ======================================================
+# Talentia - Orquestación local multi-contenedor
+# ======================================================
+
 services:
   mysql_db:
     image: mysql:8.0
-    container_name: p4_mysql_db
+    container_name: talentia_mysql_db
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: sistema_autenticacion
-      MYSQL_USER: credenly_user
-      MYSQL_PASSWORD: credenly_password
+      MYSQL_DATABASE: talentia_db
+      MYSQL_USER: talentia_user
+      MYSQL_PASSWORD: talentia_password
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./doc/database.sql:/docker-entrypoint-initdb.d/database.sql
     networks:
-      - p4_network
+      - talentia_network
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: p4_backend_nestjs
+    container_name: talentia_backend_nestjs
     restart: always
     ports:
       - "4000:4000"
@@ -30,9 +34,9 @@ services:
       PORT: 4000
       DB_HOST: mysql_db
       DB_PORT: 3306
-      DB_USER: credenly_user
-      DB_PASSWORD: credenly_password
-      DB_NAME: sistema_autenticacion
+      DB_USER: talentia_user
+      DB_PASSWORD: talentia_password
+      DB_NAME: talentia_db
       JWT_ACCESS_SECRET: supersecret_access_key_p4_2026
       JWT_REFRESH_SECRET: supersecret_refresh_key_p4_2026
       JWT_ACCESS_EXPIRATION: 900s
@@ -46,24 +50,24 @@ services:
     depends_on:
       - mysql_db
     networks:
-      - p4_network
+      - talentia_network
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: p4_frontend_react
+    container_name: talentia_frontend_react
     restart: always
     ports:
       - "3000:80"
     depends_on:
       - backend
     networks:
-      - p4_network
+      - talentia_network
 
 volumes:
   mysql_data:
 
 networks:
-  p4_network:
+  talentia_network:
     driver: bridge

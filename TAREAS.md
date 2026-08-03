@@ -38,3 +38,28 @@
 - [x] 27. Actualizar Docker Compose y .env.example
 - [x] 28. Reescribir documentación: README, ROLES, MANUAL_USUARIO, GRUPO
 - [x] 29. Probar flujo completo con Docker Compose
+
+## Fase 6: Mejora UI/UX
+- [x] 30. Crear DTOs en `auth` y `users` (Login, Register, Refresh, UpdateUser, UpdateEstado)
+- [x] 31. Endurecer `ValidationPipe` global (whitelist, forbidNonWhitelisted, transform)
+- [x] 32. Instalar `react-hook-form`, `zod`, `@hookform/resolvers`, `@headlessui/react`, `tailwindcss-animate`
+- [x] 33. Crear componentes UI base (Button, Input, FormField, Spinner, Skeleton, PageLoader, EmptyState, ErrorState, Badge, Pagination)
+- [x] 34. Crear esquemas zod espejo de los DTOs (auth, empresa, talento, reclutador)
+- [x] 35. Refactorizar formularios a RHF + zod (Login, Talento, Empresa, Reclutador, CargarCV)
+- [x] 36. Implementar loaders, skeletons y estados de error/vacío
+- [x] 37. Debounce en FilterBar + paginación reutilizable + filtros en Empresas/Reclutadores
+- [x] 38. Migrar modales a Headless UI (focus trap, Escape, ARIA)
+- [x] 39. Accesibilidad (aria-labels, skip-link, páginas 404 y Unauthorized)
+- [x] 40. Dark mode con toggle persistente + paleta brand unificada
+- [x] 41. Logo SVG + favicon + meta tags
+
+## Fase 7: Cierre de Pendientes
+- [x] 42. Renombrar `docker-compose.yml` (talentia_db, talentia_user, talentia_network)
+- [x] 43. Renombrar `package.json` de backend y frontend (talentia-backend / talentia-frontend)
+- [x] 44. Actualizar `.env.example` (talentia_db, VITE_API_URL)
+- [x] 45. Sincronizar `database.sql` con DTOs (BD → talentia_db, telefono → NULL)
+- [x] 46. Reforzar `.gitignore` (.env.local, *.tfstate, *.pem, .terraform/)
+- [x] 47. Reescribir README.md para Talentia (MySQL 8.0, roles, credenciales)
+- [x] 48. Reescribir MANUAL_USUARIO.md (funcionalidades, dark mode, validación)
+- [x] 49. Actualizar GRUPO.md y ROLES.md (proyecto Talentia, responsabilidades reales)
+- [x] 50. Actualizar PLAN_IMPLEMENTACION.md con apéndice UI/UX

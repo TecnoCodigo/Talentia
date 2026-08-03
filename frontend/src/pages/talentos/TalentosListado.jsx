@@ -1,83 +1,141 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../api/axiosInstance';
 import { useAuth } from '../../context/AuthContext';
 import DataTable from '../../components/UI/DataTable';
 import FilterBar from '../../components/UI/FilterBar';
+import ConfirmModal from '../../components/UI/ConfirmModal';
+import ErrorState from '../../components/ui/ErrorState';
+import Badge from '../../components/ui/Badge';
+import Pagination from '../../components/ui/Pagination';
 import { Plus, UploadCloud } from 'lucide-react';
+
+const PAGE_SIZE = 10;
 
 const TalentosListado = () => {
   const [talentos, setTalentos] = useState([]);
   const [filters, setFilters] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, talento: null });
   const { canEditTalento } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchTalentos = async () => {
-      try {
-        const query = new URLSearchParams(filters).toString();
-        const res = await api.get(`/talentos?${query}`);
-        setTalentos(res.data);
-      } catch (e) {
-        console.error(e);
-      }
-    };
-    fetchTalentos();
+  const fetchTalentos = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const query = new URLSearchParams(
+        Object.fromEntries(Object.entries(filters).filter(([, v]) => v)),
+      ).toString();
+      const res = await api.get(`/talentos${query ? `?${query}` : ''}`);
+      setTalentos(res.data);
+      setPage(1);
+    } catch (err) {
+      setError('No se pudo cargar la lista de talentos.');
+    } finally {
+      setLoading(false);
+    }
   }, [filters]);
 
-  const handleDelete = async (row) => {
-    if (window.confirm(`¿Eliminar a ${row.nombreCompleto}?`)) {
-      try {
-        await api.delete(`/talentos/${row.id}`);
-        setTalentos(talentos.filter(t => t.id !== row.id));
-      } catch (e) {
-        console.error(e);
-      }
+  useEffect(() => {
+    fetchTalentos();
+  }, [fetchTalentos]);
+
+  // Filtro client-side por especialidad (el backend recibe estadoLaboral y otros por query)
+  const filtered = useMemo(() => {
+    const esp = filters.especialidad?.toLowerCase().trim();
+    if (!esp) return talentos;
+    return talentos.filter((t) => (t.especialidad || '').toLowerCase().includes(esp));
+  }, [talentos, filters.especialidad]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const confirmDelete = async () => {
+    const row = deleteModal.talento;
+    if (!row) return;
+    try {
+      await api.delete(`/talentos/${row.id}`);
+      setTalentos((prev) => prev.filter((t) => t.id !== row.id));
+      setDeleteModal({ isOpen: false, talento: null });
+    } catch (err) {
+      setDeleteModal({ isOpen: false, talento: null });
     }
   };
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Talentos</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Talentos</h1>
         <div className="flex gap-3">
-          <Link to="/talentos/cargar-cv" className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg text-sm font-medium transition-colors">
-            <UploadCloud size={18} /> Cargar CV
+          <Link to="/talentos/cargar-cv" className="flex items-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">
+            <UploadCloud size={18} aria-hidden="true" /> Cargar CV
           </Link>
-          <Link to="/talentos/nuevo" className="flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
-            <Plus size={18} /> Nuevo
+          <Link to="/talentos/nuevo" className="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 dark:focus:ring-offset-slate-900">
+            <Plus size={18} aria-hidden="true" /> Nuevo
           </Link>
         </div>
       </div>
 
-      <FilterBar 
+      <FilterBar
         filters={[
-          { label: 'Especialidad', key: 'especialidad', type: 'text', placeholder: 'Buscar...' },
-          { label: 'Estado', key: 'estadoLaboral', type: 'select', options: [
-            { label: 'Disponible', value: 'Disponible' },
-            { label: 'Empleado', value: 'Empleado' },
-            { label: 'Freelance', value: 'Freelance' }
-          ]}
+          { label: 'Especialidad', key: 'especialidad', type: 'text', placeholder: 'Buscar…' },
+          {
+            label: 'Estado',
+            key: 'estadoLaboral',
+            type: 'select',
+            options: [
+              { label: 'Disponible', value: 'Disponible' },
+              { label: 'Empleado', value: 'Empleado' },
+              { label: 'Freelance', value: 'Freelance' },
+            ],
+          },
         ]}
-        onFilterChange={(key, val) => setFilters(prev => ({ ...prev, [key]: val }))}
+        onFilterChange={(key, val) => setFilters((prev) => ({ ...prev, [key]: val }))}
+        onClear={() => setFilters({ especialidad: '', estadoLaboral: '' })}
       />
 
-      <DataTable
-        columns={[
-          { label: 'Nombre', key: 'nombreCompleto' },
-          { label: 'Especialidad', key: 'especialidad' },
-          { label: 'Experiencia', render: (row) => `${row.experienciaAnios} años` },
-          { label: 'Empresa', render: (row) => row.empresa?.nombre || 'Ninguna' },
-          { label: 'Estado', render: (row) => (
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${row.estadoLaboral === 'Disponible' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400'}`}>
-              {row.estadoLaboral}
-            </span>
+      {error && !loading && <ErrorState title="No se pudo cargar el listado" description={error} onRetry={fetchTalentos} />}
+
+      {!error && (
+        <>
+          <DataTable
+            columns={[
+              { label: 'Nombre', key: 'nombreCompleto' },
+              { label: 'Especialidad', key: 'especialidad' },
+              { label: 'Experiencia', render: (row) => `${row.experienciaAnios} años` },
+              { label: 'Empresa', render: (row) => row.empresa?.nombre || 'Ninguna' },
+              {
+                label: 'Estado',
+                render: (row) => (
+                  <Badge tone={row.estadoLaboral === 'Disponible' ? 'success' : 'neutral'}>
+                    {row.estadoLaboral}
+                  </Badge>
+                ),
+              },
+            ]}
+            data={paged}
+            isLoading={loading}
+            emptyMessage="No se encontraron talentos"
+            onView={(row) => navigate(`/talentos/${row.id}`)}
+            onEdit={(row) => (canEditTalento(row) ? navigate(`/talentos/${row.id}/editar`) : null)}
+            onDelete={(row) => (canEditTalento(row) ? setDeleteModal({ isOpen: true, talento: row }) : null)}
+          />
+          {!loading && filtered.length > PAGE_SIZE && (
+            <Pagination page={page} totalPages={totalPages} onChange={setPage} className="mt-4" />
           )}
-        ]}
-        data={talentos}
-        onView={(row) => navigate(`/talentos/${row.id}`)}
-        onEdit={(row) => canEditTalento(row) ? navigate(`/talentos/${row.id}/editar`) : null}
-        onDelete={(row) => canEditTalento(row) ? handleDelete(row) : null}
+        </>
+      )}
+
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, talento: null })}
+        onConfirm={confirmDelete}
+        title="Eliminar Talento"
+        message={`¿Estás seguro que deseas eliminar al talento ${deleteModal.talento?.nombreCompleto}? Esta acción no se puede deshacer.`}
+        confirmText="Eliminar"
       />
     </div>
   );

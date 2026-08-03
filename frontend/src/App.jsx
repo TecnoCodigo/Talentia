@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './components/Layout/DashboardLayout';
 import Login from './pages/Login';
@@ -15,11 +17,14 @@ import EmpresaFormulario from './pages/empresas/EmpresaFormulario';
 import EmpresaDetalle from './pages/empresas/EmpresaDetalle';
 import ReclutadoresListado from './pages/reclutadores/ReclutadoresListado';
 import ReclutadorFormulario from './pages/reclutadores/ReclutadorFormulario';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+        <Toaster position="top-right" />
         <Routes>
           <Route path="/login" element={<Login />} />
           
@@ -45,10 +50,11 @@ function App() {
           <Route path="/reclutadores" element={<ProtectedRoute roles={['Administrador']}><DashboardLayout><ReclutadoresListado /></DashboardLayout></ProtectedRoute>} />
           <Route path="/reclutadores/nuevo" element={<ProtectedRoute roles={['Administrador']}><DashboardLayout><ReclutadorFormulario /></DashboardLayout></ProtectedRoute>} />
 
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

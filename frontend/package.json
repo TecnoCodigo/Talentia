@@ -1,5 +1,5 @@
 {
-  "name": "sistema-autenticacion-frontend",
+  "name": "talentia-frontend",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -12,12 +12,19 @@
     "test:e2e:run": "cypress run"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.10",
+    "@hookform/resolvers": "^5.7.1",
     "axios": "^1.4.0",
     "lucide-react": "^0.263.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-dropzone": "^20.0.0",
-    "react-router-dom": "^6.14.2"
+    "react-hook-form": "^7.84.0",
+    "react-hot-toast": "^2.6.0",
+    "react-imask": "^7.6.1",
+    "react-router-dom": "^6.14.2",
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",

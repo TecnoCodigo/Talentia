@@ -1,11 +1,12 @@
 -- ======================================================
 -- SCRIPT DE BASE DE DATOS - TALENTIA
 -- Proyecto: Gestor de Talentos
+-- Motor: MySQL 8.0
 -- ======================================================
 
-CREATE DATABASE IF NOT EXISTS `sistema_autenticacion` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `talentia_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-USE `sistema_autenticacion`;
+USE `talentia_db`;
 
 -- ------------------------------------------------------
 -- Eliminación de tablas en orden inverso a dependencias
@@ -25,7 +26,7 @@ CREATE TABLE `usuarios` (
     `clave` VARCHAR(255) NOT NULL,
     `nombre` VARCHAR(100) NOT NULL,
     `correo` VARCHAR(100) NOT NULL UNIQUE,
-    `telefono` VARCHAR(20) NOT NULL,
+    `telefono` VARCHAR(20) NULL,
     `rol` VARCHAR(30) NOT NULL DEFAULT 'Reclutador',
     `estado` ENUM('Activo','Inactivo') NOT NULL DEFAULT 'Activo',
     `refresh_token_hash` VARCHAR(255) NULL,
@@ -103,7 +104,8 @@ CREATE TABLE `reclutador_empresa` (
 
 -- ------------------------------------------------------
 -- Datos de Prueba Iniciales
--- Nota: La contraseña de todos los usuarios de prueba es: Password123!
+-- Credenciales en texto plano (todas iguales): Password123!
+-- Hash bcrypt correspondiente: $2b$10$3Spkg63edAoyiHesqn3KdOAyHK5HzOyhIN798cLA4ugSCAW1bINl2
 -- ------------------------------------------------------
 
 INSERT INTO `usuarios` (`id`, `usuario`, `clave`, `nombre`, `correo`, `telefono`, `rol`, `estado`, `creado_en`) VALUES 

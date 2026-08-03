@@ -1,6 +1,24 @@
+# Dependencias y builds
 node_modules/
 dist/
 coverage/
+
+# Variables de entorno (nunca commitear secrets reales)
 .env
+.env.local
+.env.*.local
+
+# Claves y certificados
+*.pem
+*.key
+
+# Estado de Terraform (puede contener secrets del state)
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.*
+
+# Editores y SO
+.vscode/
+.idea/
 .DS_Store
 *.log

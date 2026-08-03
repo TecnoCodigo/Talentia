@@ -1,7 +1,7 @@
 {
-  "name": "sistema-autenticacion-backend",
+  "name": "talentia-backend",
   "version": "1.0.0",
-  "description": "Backend NestJS REST API para Autenticación de Usuarios (Programación 4)",
+  "description": "Backend NestJS REST API para Talentia - Gestor de Talentos (Programación 4)",
   "author": "Equipo Programación 4",
   "private": true,
   "license": "MIT",
