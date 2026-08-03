@@ -2,7 +2,7 @@ import { Inbox, Eye, Edit2, Trash2 } from 'lucide-react';
 import Skeleton from '../UI/Skeleton';
 import EmptyState from '../UI/EmptyState';
 
-const DataTable = ({ columns, data, isLoading, onEdit, onDelete, onView, emptyMessage = 'No hay datos disponibles' }) => {
+const DataTable = ({ columns, data, isLoading, onEdit, onDelete, onView, isEditDisabled, isDeleteDisabled, emptyMessage = 'No hay datos disponibles' }) => {
   const hasActions = Boolean(onEdit || onDelete || onView);
   return (
     <div className="overflow-x-auto rounded-xl bg-white shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
@@ -61,26 +61,40 @@ const DataTable = ({ columns, data, isLoading, onEdit, onDelete, onView, emptyMe
                           <Eye size={16} aria-hidden="true" />
                         </button>
                       )}
-                      {onEdit && (
-                        <button
-                          onClick={() => onEdit(row)}
-                          className="rounded-md bg-brand-50 p-1.5 text-brand-600 transition-colors hover:bg-brand-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 dark:bg-brand-900/20 dark:hover:bg-brand-900/40"
-                          aria-label="Editar"
-                          title="Editar"
-                        >
-                          <Edit2 size={16} aria-hidden="true" />
-                        </button>
-                      )}
-                      {onDelete && (
-                        <button
-                          onClick={() => onDelete(row)}
-                          className="rounded-md bg-rose-50 p-1.5 text-rose-600 transition-colors hover:bg-rose-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 dark:bg-rose-900/20 dark:hover:bg-rose-900/40"
-                          aria-label="Eliminar"
-                          title="Eliminar"
-                        >
-                          <Trash2 size={16} aria-hidden="true" />
-                        </button>
-                      )}
+                      {onEdit && (() => {
+                        const disabled = isEditDisabled ? isEditDisabled(row) : false;
+                        return (
+                          <button
+                            onClick={() => !disabled && onEdit(row)}
+                            disabled={disabled}
+                            className={disabled
+                              ? 'cursor-not-allowed rounded-md bg-slate-100 p-1.5 text-slate-300 dark:bg-slate-800 dark:text-slate-600'
+                              : 'rounded-md bg-brand-50 p-1.5 text-brand-600 transition-colors hover:bg-brand-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 dark:bg-brand-900/20 dark:hover:bg-brand-900/40'
+                            }
+                            aria-label={disabled ? 'Sin permisos para editar' : 'Editar'}
+                            title={disabled ? 'No tienes permisos para editar este talento' : 'Editar'}
+                          >
+                            <Edit2 size={16} aria-hidden="true" />
+                          </button>
+                        );
+                      })()}
+                      {onDelete && (() => {
+                        const disabled = isDeleteDisabled ? isDeleteDisabled(row) : false;
+                        return (
+                          <button
+                            onClick={() => !disabled && onDelete(row)}
+                            disabled={disabled}
+                            className={disabled
+                              ? 'cursor-not-allowed rounded-md bg-slate-100 p-1.5 text-slate-300 dark:bg-slate-800 dark:text-slate-600'
+                              : 'rounded-md bg-rose-50 p-1.5 text-rose-600 transition-colors hover:bg-rose-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 dark:bg-rose-900/20 dark:hover:bg-rose-900/40'
+                            }
+                            aria-label={disabled ? 'Sin permisos para eliminar' : 'Eliminar'}
+                            title={disabled ? 'No tienes permisos para eliminar este talento' : 'Eliminar'}
+                          >
+                            <Trash2 size={16} aria-hidden="true" />
+                          </button>
+                        );
+                      })()}
                     </div>
                   </td>
                 )}

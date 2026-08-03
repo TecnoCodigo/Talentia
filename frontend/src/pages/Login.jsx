@@ -68,7 +68,7 @@ const Login = () => {
                     <User className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} aria-hidden="true" />
                     <input
                       type="text"
-                      placeholder="admin o estudiante"
+                      placeholder="admin o reclutador"
                       {...register('usuario')}
                       {...props}
                       className="w-full rounded-xl border-0 bg-slate-100/80 py-2.5 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 transition duration-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-600 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500"
@@ -125,7 +125,7 @@ const Login = () => {
           <div className="mb-6 flex items-center justify-center">
             <img src="/logo_full.png" alt="Talentia" className="h-44 w-auto max-w-sm object-contain drop-shadow-md dark:brightness-110" />
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 text-center">Autenticación segura, información en tus manos.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 text-center">Cada Talento es <strong>único</strong> y queremos <strong>valorarlo</strong>.</p>
         </div>
       </div>
     </div>
