@@ -2,22 +2,34 @@ import { Controller, Post, Body, Get, Delete, Param, Query, UseGuards, Req, Unau
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Observable } from 'rxjs';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UsersService } from '../users/users.service';
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService
+  ) { }
 
   @Sse('events')
   sseEvents(): Observable<any> {
     return this.authService.getEventsObservable();
   }
 
-  @Post('login')
-  async login(@Req() req, @Body() body: { usuario: string; clave: string; clientIp?: string }) {
-    if (!body.usuario || !body.clave) {
-      throw new UnauthorizedException('Debe ingresar usuario y contraseña');
-    }
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('Administrador')
+  @Post('register')
+  async register(@Body() body: RegisterDto) {
+    return this.usersService.create(body);
+  }
 
+  @Post('login')
+  async login(@Req() req, @Body() body: LoginDto) {
     const user = await this.authService.validateUser(body.usuario, body.clave);
     if (!user) {
       throw new UnauthorizedException('Credenciales incorrectas');
@@ -57,10 +69,7 @@ export class AuthController {
   }
 
   @Post('refresh')
-  async refresh(@Body() body: { userId: number; refresh_token: string }) {
-    if (!body.userId || !body.refresh_token) {
-      throw new UnauthorizedException('Parámetros de renovación faltantes');
-    }
+  async refresh(@Body() body: RefreshTokenDto) {
     return this.authService.refreshTokens(body.userId, body.refresh_token);
   }
 

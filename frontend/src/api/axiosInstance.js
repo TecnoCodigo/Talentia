@@ -1,4 +1,5 @@
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
@@ -20,7 +21,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Interceptor para respuestas: Manejo automático de Refresh Token
+// Interceptor para respuestas: Manejo automático de Refresh Token y Errores Globales
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -56,10 +57,26 @@ api.interceptors.response.use(
         }
       } catch (refreshError) {
         localStorage.clear();
-        window.location.href = '/login';
+        toast.error('Tu sesión ha expirado');
+        // Navegación SPA sin hard refresh
+        window.dispatchEvent(new CustomEvent('auth:logout'));
         return Promise.reject(refreshError);
       }
     }
+
+    // Manejo de otros errores comunes
+    if (error.response) {
+      const status = error.response.status;
+      if (status === 403) {
+        toast.error('No tienes permisos para realizar esta acción');
+      } else if (status === 500) {
+        toast.error('Error interno del servidor');
+      }
+    } else if (error.request) {
+      // Error de red
+      toast.error('Error de conexión. Verifica tu internet');
+    }
+
     return Promise.reject(error);
   }
 );

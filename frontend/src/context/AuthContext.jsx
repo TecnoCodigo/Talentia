@@ -29,6 +29,13 @@ export const AuthProvider = ({ children }) => {
 
     checkAuth();
 
+    // Escuchar logout forzado por expiración de token (desde axiosInstance, sin hard refresh)
+    const handleForcedLogout = () => {
+      localStorage.clear();
+      setUser(null);
+    };
+    window.addEventListener('auth:logout', handleForcedLogout);
+
     // Conexión Server-Sent Events (SSE) push en lugar de polling
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
     const eventSource = new EventSource(`${API_URL}/auth/events`);
@@ -56,7 +63,10 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    return () => eventSource.close();
+    return () => {
+      eventSource.close();
+      window.removeEventListener('auth:logout', handleForcedLogout);
+    };
   }, []);
 
   const login = async (usuario, clave) => {
@@ -91,8 +101,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const hasRole = (rolesArray) => {
+    if (!user) return false;
+    return rolesArray.includes(user.rol);
+  };
+
+  const canEditTalento = (talento) => {
+    if (!user || !talento) return false;
+    if (user.rol === 'Administrador') return true;
+    if (talento.registradoPor?.id === user.id) return true;
+    // Si viene en el payload del user (se asume que se hidrata al loguear/profile)
+    if (talento.empresa && user.empresasAsignadas) {
+      return user.empresasAsignadas.some(re => re.empresa?.id === talento.empresa.id || re.empresaId === talento.empresa.id);
+    }
+    return false;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, hasRole, canEditTalento }}>
       {children}
     </AuthContext.Provider>
   );

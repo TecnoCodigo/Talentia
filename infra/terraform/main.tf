@@ -8,7 +8,7 @@ terraform {
 
   backend "gcs" {
     bucket  = "credenly-tf-state"
-    prefix  = "terraform/state"
+    prefix  = "terraform/talentia-state"
   }
 }
 
@@ -34,162 +34,51 @@ variable "zone" {
   default     = "us-central1-a"
 }
 
-variable "allowed_ssh_ip" {
-  description = "IP address allowed to SSH into the instance (or use IAP range)"
-  type        = string
-  default     = "35.235.240.0/20" # Default allows Identity-Aware Proxy (IAP)
+# 1. Conexión a la red VPC existente donde está alojada la MySQL DB de credenly
+data "google_compute_network" "vpc_network" {
+  name = "credenly-vpc-network"
 }
 
-# 1. VPC Network
-resource "google_compute_network" "vpc_network" {
-  name                    = "credenly-vpc-network"
-  auto_create_subnetworks = false
-}
-
-# 2. Subnet for the VM (Database)
-resource "google_compute_subnetwork" "db_subnet" {
-  name          = "credenly-db-subnet"
-  ip_cidr_range = "10.0.1.0/24"
-  region        = var.region
-  network       = google_compute_network.vpc_network.id
-}
-
-# 3. Subnet for Cloud Run (Serverless VPC Access connector or Direct VPC Egress)
+# 2. Subred dedicada para Talentia (Serverless VPC Access connector)
 resource "google_compute_subnetwork" "serverless_subnet" {
-  name          = "credenly-serverless-subnet"
-  ip_cidr_range = "10.0.2.0/28"
+  name          = "talentia-serverless-subnet"
+  ip_cidr_range = "10.0.3.0/28"
   region        = var.region
-  network       = google_compute_network.vpc_network.id
+  network       = data.google_compute_network.vpc_network.id
 }
 
-# 4. Firewall Rule: Allow SSH via IAP
-resource "google_compute_firewall" "allow_ssh_iap" {
-  name    = "credenly-allow-ssh-iap"
-  network = google_compute_network.vpc_network.id
-
-  allow {
-    protocol = "tcp"
-    ports    = ["22"]
-  }
-  
-  source_ranges = [var.allowed_ssh_ip]
-  target_tags   = ["credenly-db-instance"]
-}
-
-# 5. Firewall Rule: Allow MySQL only from Cloud Run Serverless Subnet
-resource "google_compute_firewall" "allow_mysql_internal" {
-  name    = "credenly-allow-mysql-internal"
-  network = google_compute_network.vpc_network.id
-
-  allow {
-    protocol = "tcp"
-    ports    = ["3306"]
-  }
-  
-  source_ranges = ["10.0.2.0/28"] # Only allow Cloud Run
-  target_tags   = ["credenly-db-instance"]
-}
-
-# 6. Database VM (e2-micro Free Tier)
-resource "google_compute_instance" "db_instance" {
-  name         = "credenly-mysql-db-v5"
-  machine_type = "e2-micro"
-  zone         = var.zone
-  tags         = ["credenly-db-instance"]
-
-  boot_disk {
-    initialize_params {
-      image = "debian-cloud/debian-11"
-      size  = 30
-      type  = "pd-standard" # Free tier uses standard persistent disk
-    }
-  }
-
-  network_interface {
-    network    = google_compute_network.vpc_network.id
-    subnetwork = google_compute_subnetwork.db_subnet.id
-    
-    # Empty access_config means NO external IP for maximum security
-    # We will use IAP to connect to it via SSH.
-    access_config {
-      // Ephemeral public IP required for outbound internet to install docker
-    }
-  }
-
-  metadata_startup_script = <<-EOT
-    #!/bin/bash
-    sudo apt-get update
-    sudo apt-get install -y docker.io docker-compose
-    sudo systemctl enable docker
-    sudo systemctl start docker
-
-    # Run MySQL directly with docker to avoid docker-compose version issues
-    sudo docker volume create mysql_data
-    sudo docker run -d \
-      --name credenly_mysql_db \
-      --restart always \
-      -e MYSQL_ROOT_PASSWORD=rootpassword \
-      -e MYSQL_DATABASE=sistema_autenticacion \
-      -e MYSQL_USER=credenly_user \
-      -e MYSQL_PASSWORD=credenly_password \
-      -p 3306:3306 \
-      -v mysql_data:/var/lib/mysql \
-      mysql:5.7
-  EOT
-}
-
-# 7. Artifact Registry Repository
-resource "google_artifact_registry_repository" "repo" {
+# 3. Artifact Registry Repository (Reutiliza credenly-repo existente)
+data "google_artifact_registry_repository" "repo" {
   location      = var.region
   repository_id = "credenly-repo"
-  description   = "Docker repository para el backend"
-  format        = "DOCKER"
 }
 
-# 8. Serverless VPC Access Connector (For Cloud Run to reach the VM)
+# 4. Serverless VPC Access Connector de Talentia (Conecta con la VPC existente)
 resource "google_vpc_access_connector" "connector" {
-  name          = "credenly-vpc-conn"
+  name          = "talentia-vpc-conn"
   region        = var.region
   subnet {
     name = google_compute_subnetwork.serverless_subnet.name
   }
-  machine_type = "e2-micro"
+  machine_type  = "e2-micro"
   min_instances = 2
   max_instances = 3
 }
 
-# 8. Cloud Run Service (Backend)
+# 5. Cloud Run Service para Talentia Backend (NestJS)
+# Importante: Nombre independiente 'talentia-backend-nestjs' para NO sobreescribir ni eliminar el backend anterior
 resource "google_cloud_run_v2_service" "backend" {
-  name     = "credenly-backend-nestjs"
+  name     = "talentia-backend-nestjs"
   location = var.region
   ingress  = "INGRESS_TRAFFIC_ALL"
 
   template {
+    scaling {
+      max_instance_count = 1
+    }
+
     containers {
-      # Usamos una imagen genérica inicial para evitar el problema del huevo y la gallina.
-      # GitHub Actions actualizará la imagen con la real después de compilarla.
       image = "us-docker.pkg.dev/cloudrun/container/hello"
-      
-      env {
-        name  = "DB_HOST"
-        value = google_compute_instance.db_instance.network_interface[0].network_ip
-      }
-      env {
-        name  = "DB_PORT"
-        value = "3306"
-      }
-      env {
-        name  = "DB_USER"
-        value = "credenly_user"
-      }
-      env {
-        name  = "DB_PASSWORD"
-        value = "credenly_password"
-      }
-      env {
-        name  = "DB_NAME"
-        value = "sistema_autenticacion"
-      }
 
       liveness_probe {
         http_get {
@@ -204,18 +93,19 @@ resource "google_cloud_run_v2_service" "backend" {
     
     vpc_access {
       connector = google_vpc_access_connector.connector.id
-      egress    = "PRIVATE_RANGES_ONLY"
+      egress    = "ALL_TRAFFIC"
     }
   }
 
   lifecycle {
     ignore_changes = [
       template[0].containers[0].image,
+      template[0].containers[0].env,
     ]
   }
 }
 
-# 10. Allow Public Access to Cloud Run (since it's a backend API)
+# 6. Permiso de acceso público invoker para el backend de Talentia
 resource "google_cloud_run_service_iam_member" "public_access" {
   location = google_cloud_run_v2_service.backend.location
   project  = google_cloud_run_v2_service.backend.project

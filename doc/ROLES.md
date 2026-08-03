@@ -4,6 +4,7 @@
 **Docente:** Nelson Ruiz  
 **Ponderación:** 25%  
 **Modalidad:** Online  
+**Proyecto:** Talentia - Gestor de Talentos
 
 ---
 
@@ -11,25 +12,34 @@
 
 ### 1. Administrador de Base de Datos (DBA)
 - **Responsabilidades:** 
-  - Diseñar el modelo relacional de la tabla `usuarios` en MySQL.
-  - Generar el script DDL/DML `doc/database.sql` con restricción de unicidad, tipos de datos óptimos e inserción de datos iniciales.
-  - Asegurar la persistencia e integridad de datos en el entorno local (Docker) y en producción (Cloudflare D1 / MySQL).
+  - Diseñar el modelo relacional de 5 tablas en MySQL 8.0: `usuarios`, `sesiones`, `empresas`, `talentos` y `reclutador_empresa` (relación Many-to-Many reclutador↔empresa).
+  - Generar el script DDL/DML `doc/database.sql` con restricciones de unicidad, claves foráneas, enums (`estado_laboral`, `estado` de empresa/usuario) e inserción de datos iniciales.
+  - Asegurar la persistencia e integridad de datos en el entorno local (Docker) y en producción (MySQL en Google Cloud).
 
 ### 2. Desarrollador Backend (NestJS / Node.js & ORM)
 - **Responsabilidades:**
-  - Configuración de la conexión a MySQL usando **TypeORM / NestJS**.
-  - Implementación de la lógica de autenticación con contraseñas encriptadas (`bcrypt`).
-  - Emisión, verificación y rotación de tokens seguros: `access_token` (JWT corta duración) y `refresh_token` (larga duración).
-  - Creación de endpoints REST (`/auth/login`, `/auth/refresh`, `/auth/profile`, `/auth/logout`) protegidos con Guards/Middleware.
+  - Configuración de la conexión a MySQL 8.0 usando **TypeORM / NestJS**.
+  - Implementación de la autenticación con contraseñas encriptadas (`bcrypt`) y emisión, verificación y rotación de tokens seguros (`access_token` JWT corta duración + `refresh_token` larga duración).
+  - CRUD completo de `empresas`, `talentos` y `reclutador_empresa` con Guards por rol (`@Roles('Administrador')` / `@Roles('Reclutador')`).
+  - **Asignación Multiempresa**: Endpoints y servicios (`POST /asignaciones/multiple`) para vincular reclutadores a más de una empresa simultáneamente.
+  - Lógica de permisos por grupos: el reclutador sólo edita talentos que creó o de empresas asignadas.
+  - **DTOs con class-validator** (validación server-side con mensajes claros en español).
+  - Integración con **Google Gemini API** para extracción de datos de CVs en PDF.
+  - Integración con **Cloudflare R2** (storage compatible S3) generando **URLs prefirmadas temporales de lectura** para la previsualización segura de CVs.
+  - Endpoints REST protegidos con Guards/Middleware y SSE para logout push en tiempo real.
 
 ### 3. Desarrollador UI (Frontend React)
 - **Responsabilidades:**
-  - Maquetación y diseño estético en **React + Vite** de las vistas principales (`Login` y `Perfil`).
-  - Creación de componentes modulares (Formularios, Tarjetas de Usuario, Botones de Acción, Avisos de Error).
-  - Implementación de interceptores HTTP (Axios) para adjuntar tokens automáticamente y manejar la sesión de usuario.
+  - Maquetación y diseño en **React + Vite + TailwindCSS** de 18+ páginas: Dashboard, Talentos (listado, detalle, formulario, cargar CV), Empresas (listado, detalle, formulario), Reclutadores (listado, formulario con selección multiempresa por checkboxes), Perfil, Login, NotFound y Unauthorized.
+  - Componentes UI reutilizables: `Button`, `Input`, `FormField`, `DataTable`, `FilterBar`, `Pagination`, `Modal`, `ConfirmModal`, `Badge`, `Spinner`, `Skeleton`, `EmptyState`, `ErrorState`.
+  - Integración de **Gestor de CVs intuitivo**: Selector/Previsualizador de PDF con opciones de cambiar, ver mediante presigned URL o quitar CV de forma opcional.
+  - Validación declarativa de formularios con **react-hook-form + zod** indicando claramente campos obligatorios (`*`) y opcionales (`(Opcional)`), eliminando errores genéricos.
+  - Interceptores HTTP (Axios) para adjuntar tokens, refrescar sesión automáticamente y manejar logout por expiración.
+  - Modo oscuro con `ThemeContext` y persistencia en localStorage.
 
 ### 4. Especialista en Responsividad (CSS & UI Adaptive)
 - **Responsabilidades:**
-  - Configuración del framework responsive **TailwindCSS** y reglas personalizadas (Media Queries `@media`).
-  - Garantizar adaptabilidad total (100% Responsive) para smartphones (320px+), tablets (768px+) y monitores de escritorio (1024px+).
-  - Implementación de animaciones sutiles, estados de hover/focus y modo visual optimizado.
+  - Configuración de TailwindCSS con paleta `brand` custom, `darkMode: 'class'` y plugin `tailwindcss-animate`.
+  - Diseño mobile-first (320px+, 768px+, 1024px+): Sidebar colapsable en móvil, `DataTable` con scroll horizontal, filtros y paginación responsivos.
+  - Accesibilidad: navegación por teclado, modales con focus trap / Escape / ARIA (Headless UI), `aria-label` en botones icono, `role="alert"` en errores, link "saltar al contenido", páginas 404 y de acceso restringido.
+  - Estados de carga (skeletons, spinners), estados vacíos y estados de error reintentables en todas las vistas de datos.

@@ -1,14 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosInstance';
-import { LogOut, Mail, Phone, Shield, Calendar, Monitor, Smartphone, Globe, Clock, ShieldCheck, Trash2, X, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import Modal from '../components/UI/Modal';
+import Pagination from '../components/UI/Pagination';
+import Badge from '../components/UI/Badge';
+import Spinner from '../components/UI/Spinner';
+import EmptyState from '../components/UI/EmptyState';
+import { Mail, Phone, Shield, Calendar, Monitor, Smartphone, Globe, Clock, ShieldCheck, Trash2, Filter } from 'lucide-react';
 
 const Profile = () => {
   const { user, logout } = useAuth();
   const [sesiones, setSesiones] = useState([]);
   const [loadingSesiones, setLoadingSesiones] = useState(true);
 
-  // Estado para el Modal de Todas las Sesiones
+  // Modal de todas las sesiones
   const [modalAbierto, setModalAbierto] = useState(false);
   const [modalSesiones, setModalSesiones] = useState([]);
   const [filtroEstado, setFiltroEstado] = useState('todas');
@@ -17,14 +22,13 @@ const Profile = () => {
   const [totalRegistros, setTotalRegistros] = useState(0);
   const [loadingModal, setLoadingModal] = useState(false);
 
-  // Cargar primeras 5 sesiones para la vista principal
   const fetchSesionesPrincipales = async () => {
     try {
       const res = await api.get('/auth/sessions?limit=5');
       setSesiones(res.data.data || []);
       setTotalRegistros(res.data.total || 0);
     } catch (err) {
-      console.error('Error cargando sesiones principales:', err);
+      // silencioso
     } finally {
       setLoadingSesiones(false);
     }
@@ -34,7 +38,6 @@ const Profile = () => {
     fetchSesionesPrincipales();
   }, []);
 
-  // Cargar sesiones para el Modal con filtros y paginación
   const fetchModalSesiones = async (estado = filtroEstado, page = paginaActual) => {
     setLoadingModal(true);
     try {
@@ -42,7 +45,7 @@ const Profile = () => {
       setModalSesiones(res.data.data || []);
       setTotalPaginas(res.data.totalPages || 1);
     } catch (err) {
-      console.error('Error cargando modal de sesiones:', err);
+      // silencioso
     } finally {
       setLoadingModal(false);
     }
@@ -67,322 +70,169 @@ const Profile = () => {
     }
   };
 
-  // Revocar/Cerrar sesión remota por ID
   const handleRevocarSesion = async (sessionId) => {
     try {
       await api.delete(`/auth/sessions/${sessionId}`);
-      // Recargar ambas listas
       fetchSesionesPrincipales();
-      if (modalAbierto) {
-        fetchModalSesiones(filtroEstado, paginaActual);
-      }
+      if (modalAbierto) fetchModalSesiones(filtroEstado, paginaActual);
     } catch (err) {
-      console.error('Error revocando sesión:', err);
+      // silencioso
     }
   };
 
   const fechaRegistro = user?.creadoEn
     ? new Date(user.creadoEn).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })
-    : '15 de Enero, 2026';
+    : '—';
+
+  const renderSesion = (s) => {
+    const esActiva = s.estado === 'Activa' || s.estado === 'Sesión Actual';
+    const esMovil = s.dispositivo.includes('Móvil') || s.dispositivo.includes('Android') || s.dispositivo.includes('iOS');
+    return (
+      <div
+        key={s.id}
+        className="flex items-center justify-between gap-3 rounded-xl border border-slate-200/80 bg-slate-50 p-3 transition hover:bg-slate-100/60 dark:border-slate-700 dark:bg-slate-800/50 dark:hover:bg-slate-800/80"
+      >
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="shrink-0 rounded-xl border border-slate-200 bg-white p-2 text-brand-600 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-brand-400">
+            {esMovil ? <Smartphone className="h-4 w-4" aria-hidden="true" /> : <Monitor className="h-4 w-4" aria-hidden="true" />}
+          </div>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="truncate text-xs font-bold text-slate-800 dark:text-slate-100">{s.dispositivo}</p>
+              <Badge tone={esActiva ? 'success' : 'neutral'}>{esActiva ? '● Activa' : 'Finalizada'}</Badge>
+            </div>
+            <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400 dark:text-slate-500">
+              <span className="flex items-center gap-1"><Globe className="h-3 w-3" aria-hidden="true" /> {s.ipAcceso}</span>
+              <span>•</span>
+              <span>{new Date(s.creadoEn).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</span>
+            </div>
+          </div>
+        </div>
+
+        {esActiva && (
+          <button
+            onClick={() => handleRevocarSesion(s.id)}
+            title="Revocar esta sesión"
+            aria-label="Revocar esta sesión"
+            className="shrink-0 rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 dark:hover:bg-rose-900/30"
+          >
+            <Trash2 className="h-4 w-4" aria-hidden="true" />
+          </button>
+        )}
+      </div>
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-slate-100/90 text-slate-800 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
-
-      <header className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between sticky top-0 z-30 shadow-sm gap-2">
-        <div className="flex items-center gap-2.5">
-          <img src="/logo.png" alt="Credenly Icon" className="w-7 h-7 sm:w-8 sm:h-8 object-contain" />
-          <div className="flex flex-col">
-            <span className="font-extrabold text-slate-900 text-sm sm:text-base leading-tight tracking-tight">
-              Credenly
-            </span>
-            <span className="hidden sm:inline text-[10px] text-slate-500 font-medium">Autenticación segura, información en tus manos.</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 sm:gap-4">
-          <div className="flex items-center gap-2 bg-slate-50 px-2.5 sm:px-3.5 py-1.5 rounded-full border border-slate-200">
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
+    <div>
+      <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="grid grid-cols-1 gap-6 p-4 sm:p-8 lg:grid-cols-12 lg:gap-8">
+          {/* Tarjeta de perfil */}
+          <div className="z-10 flex flex-col items-center rounded-2xl border border-slate-100 bg-white p-6 text-center shadow-sm dark:border-slate-800 dark:bg-slate-800/40 lg:col-span-4">
+            <div className="mb-4 flex h-28 w-28 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-600 to-blue-600 text-4xl font-extrabold text-white shadow-md dark:from-brand-700 dark:to-blue-700 sm:h-32 sm:w-32">
               {user?.nombre ? user.nombre.charAt(0) : 'U'}
             </div>
-            <span className="text-xs font-semibold text-slate-700 max-w-[100px] sm:max-w-none truncate">{user?.nombre}</span>
+
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">{user?.nombre}</h2>
+            <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">@{user?.usuario} • ID #{user?.id}</p>
+
+            <div className="my-4 flex items-center gap-1.5 rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-600 dark:border-brand-800 dark:bg-brand-900/30 dark:text-brand-400">
+              <Shield className="h-3.5 w-3.5" aria-hidden="true" /> Rol: {user?.rol || 'Usuario'}
+            </div>
+
+            <div className="mt-2 w-full space-y-3.5 border-t border-slate-100 pt-4 text-left dark:border-slate-700">
+              <div className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300">
+                <Mail className="h-4 w-4 shrink-0 text-brand-500" aria-hidden="true" />
+                <span className="truncate">{user?.correo}</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300">
+                <Phone className="h-4 w-4 shrink-0 text-brand-500" aria-hidden="true" />
+                <span>{user?.telefono || '—'}</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300">
+                <Calendar className="h-4 w-4 shrink-0 text-brand-500" aria-hidden="true" />
+                <span>Miembro desde: <strong>{fechaRegistro}</strong></span>
+              </div>
+            </div>
           </div>
 
-          <button
-            onClick={logout}
-            title="Cerrar Sesión"
-            className="px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-full transition flex items-center gap-1"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Cerrar Sesión</span>
-          </button>
-        </div>
-      </header>
-
-      <main className="flex-1 max-w-6xl w-full mx-auto p-3 sm:p-6 lg:p-8">
-
-        <div className="relative rounded-3xl overflow-hidden shadow-lg border border-slate-200 bg-white mb-6">
-          <div className="h-32 sm:h-56 lg:h-64 w-full relative overflow-hidden">
-            <img
-              src="/profile_banner.png"
-              alt="Profile Banner"
-              className="w-full h-full object-cover"
-            />
-          </div>
-
-          <div className="p-4 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 -mt-12 sm:-mt-24">
-
-            <div className="lg:col-span-4 bg-white rounded-2xl p-6 shadow-xl border border-slate-100 flex flex-col items-center text-center z-10">
-              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden border-4 border-white shadow-md mb-4 bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-4xl font-extrabold">
-                {user?.nombre ? user.nombre.charAt(0) : 'U'}
-              </div>
-
-              <h2 className="text-xl font-bold text-slate-900">{user?.nombre}</h2>
-              <p className="text-xs text-slate-400 mt-0.5">@{user?.usuario} • ID #{user?.id}</p>
-
-              <div className="my-4 px-3 py-1 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-full text-xs font-semibold flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5" /> Rol: {user?.rol || 'Usuario'}
-              </div>
-
-              <div className="w-full text-left pt-4 border-t border-slate-100 space-y-3.5 mt-2">
-                <div className="flex items-center gap-2.5 text-xs text-slate-600">
-                  <Mail className="w-4 h-4 text-indigo-500 shrink-0" />
-                  <span className="truncate">{user?.correo}</span>
+          {/* Panel de sesiones */}
+          <div className="space-y-6 pt-0 lg:col-span-8 lg:pt-20">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800/40">
+              <div className="mb-4 flex flex-col items-start justify-between gap-2 border-b border-slate-100 pb-4 sm:flex-row sm:items-center dark:border-slate-700">
+                <div>
+                  <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+                    <Clock className="h-4 w-4 text-brand-600 dark:text-brand-400" aria-hidden="true" /> Últimas Sesiones Registradas
+                  </h3>
+                  <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">Priorizando conexiones activas (Máximo 5 visibles)</p>
                 </div>
-                <div className="flex items-center gap-2.5 text-xs text-slate-600">
-                  <Phone className="w-4 h-4 text-indigo-500 shrink-0" />
-                  <span>{user?.telefono}</span>
-                </div>
-                <div className="flex items-center gap-2.5 text-xs text-slate-600">
-                  <Calendar className="w-4 h-4 text-indigo-500 shrink-0" />
-                  <span>Miembro desde: <strong>{fechaRegistro}</strong></span>
-                </div>
-              </div>
-            </div>
-
-            {/* Panel Derecho: Historial de Sesiones */}
-            <div className="lg:col-span-8 pt-0 lg:pt-20 space-y-6">
-
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 mb-4 border-b border-slate-100 gap-2">
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-indigo-600" />
-                      Últimas Sesiones Registradas
-                    </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Priorizando conexiones activas (Máximo 5 visibles)</p>
-                  </div>
-
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
-                    <ShieldCheck className="w-3.5 h-3.5" /> Conexión Protegida
-                  </span>
-                </div>
-
-                {loadingSesiones ? (
-                  <div className="p-6 text-center text-slate-400 text-xs">Cargando historial de accesos...</div>
-                ) : sesiones.length === 0 ? (
-                  <div className="p-6 text-center text-slate-400 text-xs">No hay sesiones registradas.</div>
-                ) : (
-                  <div className="space-y-2.5">
-                    {sesiones.map((s) => (
-                      <div
-                        key={s.id}
-                        className="p-3 sm:p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3 hover:bg-slate-100/60 transition"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="p-2 rounded-xl bg-white border border-slate-200 text-indigo-600 shadow-sm shrink-0">
-                            {s.dispositivo.includes('Móvil') || s.dispositivo.includes('Android') || s.dispositivo.includes('iOS') ? <Smartphone className="w-4 h-4" /> : <Monitor className="w-4 h-4" />}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <p className="text-xs font-bold text-slate-800 truncate">{s.dispositivo}</p>
-                              {s.estado === 'Activa' || s.estado === 'Sesión Actual' ? (
-                                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 shrink-0">
-                                  ● Activa
-                                </span>
-                              ) : (
-                                <span className="px-2 py-0.5 rounded-full text-[9px] font-medium bg-slate-200 text-slate-600 shrink-0">
-                                  Finalizada
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5 flex-wrap">
-                              <span className="flex items-center gap-1"><Globe className="w-3 h-3 text-slate-400" /> {s.ipAcceso}</span>
-                              <span>•</span>
-                              <span>{new Date(s.creadoEn).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {(s.estado === 'Activa' || s.estado === 'Sesión Actual') && (
-                          <button
-                            onClick={() => handleRevocarSesion(s.id)}
-                            title="Revocar esta sesión"
-                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition shrink-0"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-
-                    {/* Botón para abrir el Modal si hay sesiones */}
-                    <div className="pt-3 border-t border-slate-100 text-center">
-                      <button
-                        onClick={abrirModal}
-                        className="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline transition inline-flex items-center gap-1"
-                      >
-                        Ver todas las sesiones y filtros ({totalRegistros}) →
-                      </button>
-                    </div>
-                  </div>
-                )}
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-600 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
+                  <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" /> Conexión Protegida
+                </span>
               </div>
 
-            </div>
-
-          </div>
-        </div>
-
-      </main>
-
-      {/* MODAL DE GESTIÓN COMPLETA DE SESIONES */}
-      {modalAbierto && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
-
-            <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <div>
-                <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-                  <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
-                  Gestión Completa de Sesiones
-                </h3>
-                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">Filtra, pagina y revoca dispositivos conectados</p>
-              </div>
-
-              <button
-                onClick={() => setModalAbierto(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Filtros Compactos */}
-            <div className="p-3 border-b border-slate-100 bg-white flex items-center gap-1.5 overflow-x-auto">
-              <span className="text-[11px] font-bold text-slate-500 shrink-0 mr-1 flex items-center gap-1">
-                <Filter className="w-3 h-3" /> Filtrar:
-              </span>
-              <button
-                onClick={() => handleCambiarFiltro('todas')}
-                className={`px-3 py-1 rounded-full text-[11px] font-semibold transition shrink-0 ${
-                  filtroEstado === 'todas'
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                Todas
-              </button>
-              <button
-                onClick={() => handleCambiarFiltro('Activa')}
-                className={`px-3 py-1 rounded-full text-[11px] font-semibold transition shrink-0 ${
-                  filtroEstado === 'Activa'
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                Activas
-              </button>
-              <button
-                onClick={() => handleCambiarFiltro('Finalizada')}
-                className={`px-3 py-1 rounded-full text-[11px] font-semibold transition shrink-0 ${
-                  filtroEstado === 'Finalizada'
-                    ? 'bg-slate-700 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                Finalizadas
-              </button>
-            </div>
-
-            {/* Cuerpo Lista Modal */}
-            <div className="p-4 overflow-y-auto flex-1 space-y-2.5">
-              {loadingModal ? (
-                <div className="p-8 text-center text-slate-400 text-xs">Cargando registros...</div>
-              ) : modalSesiones.length === 0 ? (
-                <div className="p-8 text-center text-slate-400 text-xs">No se encontraron sesiones con el filtro seleccionado.</div>
+              {loadingSesiones ? (
+                <div className="flex justify-center p-6">
+                  <Spinner className="text-brand-600 dark:text-brand-400" />
+                </div>
+              ) : sesiones.length === 0 ? (
+                <EmptyState title="No hay sesiones registradas" />
               ) : (
-                modalSesiones.map((s) => (
-                  <div
-                    key={s.id}
-                    className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3 hover:bg-slate-100/60 transition"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="p-2 rounded-xl bg-white border border-slate-200 text-indigo-600 shadow-sm shrink-0">
-                        {s.dispositivo.includes('Móvil') || s.dispositivo.includes('Android') || s.dispositivo.includes('iOS') ? <Smartphone className="w-4 h-4" /> : <Monitor className="w-4 h-4" />}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-xs font-bold text-slate-800 truncate">{s.dispositivo}</p>
-                          {s.estado === 'Activa' || s.estado === 'Sesión Actual' ? (
-                            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 shrink-0">
-                              ● Activa
-                            </span>
-                          ) : (
-                            <span className="px-2 py-0.5 rounded-full text-[9px] font-medium bg-slate-200 text-slate-600 shrink-0">
-                              Finalizada
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5 flex-wrap">
-                          <span className="flex items-center gap-1"><Globe className="w-3 h-3 text-slate-400" /> {s.ipAcceso}</span>
-                          <span>•</span>
-                          <span>{new Date(s.creadoEn).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {(s.estado === 'Activa' || s.estado === 'Sesión Actual') && (
-                      <button
-                        onClick={() => handleRevocarSesion(s.id)}
-                        title="Revocar sesión remota"
-                        className="px-2.5 py-1 text-[10px] font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition shrink-0 flex items-center gap-1"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Revocar</span>
-                      </button>
-                    )}
+                <div className="space-y-2.5">
+                  {sesiones.map(renderSesion)}
+                  <div className="border-t border-slate-100 pt-3 text-center dark:border-slate-700">
+                    <button
+                      onClick={abrirModal}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-brand-600 transition hover:text-brand-800 hover:underline dark:text-brand-400 dark:hover:text-brand-300"
+                    >
+                      Ver todas las sesiones y filtros ({totalRegistros}) →
+                    </button>
                   </div>
-                ))
+                </div>
               )}
             </div>
-
-            <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-              <span className="text-xs text-slate-500 font-medium">
-                Página {paginaActual} de {totalPaginas}
-              </span>
-
-              <div className="flex items-center gap-2">
-                <button
-                  disabled={paginaActual <= 1}
-                  onClick={() => handleCambiarPagina(paginaActual - 1)}
-                  className="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 disabled:opacity-40 hover:bg-slate-100 transition"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button
-                  disabled={paginaActual >= totalPaginas}
-                  onClick={() => handleCambiarPagina(paginaActual + 1)}
-                  className="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 disabled:opacity-40 hover:bg-slate-100 transition"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
           </div>
         </div>
-      )}
+      </div>
 
+      <Modal isOpen={modalAbierto} onClose={() => setModalAbierto(false)} title="Gestión completa de sesiones" size="lg">
+        {/* Filtros */}
+        <div className="mb-4 flex items-center gap-1.5 overflow-x-auto border-b border-slate-100 pb-3 dark:border-slate-700">
+          <span className="mr-1 flex shrink-0 items-center gap-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+            <Filter className="h-3 w-3" aria-hidden="true" /> Filtrar:
+          </span>
+          {['todas', 'Activa', 'Finalizada'].map((est) => (
+            <button
+              key={est}
+              onClick={() => handleCambiarFiltro(est)}
+              className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold transition ${
+                filtroEstado === est
+                  ? 'bg-brand-600 text-white shadow-sm'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'
+              }`}
+            >
+              {est === 'todas' ? 'Todas' : est === 'Activa' ? 'Activas' : 'Finalizadas'}
+            </button>
+          ))}
+        </div>
+
+        {/* Lista */}
+        <div className="space-y-2.5">
+          {loadingModal ? (
+            <div className="flex justify-center p-8">
+              <Spinner className="text-brand-600 dark:text-brand-400" />
+            </div>
+          ) : modalSesiones.length === 0 ? (
+            <EmptyState title="No se encontraron sesiones" description="Prueba con otro filtro." />
+          ) : (
+            modalSesiones.map(renderSesion)
+          )}
+        </div>
+
+        <div className="mt-4 border-t border-slate-100 pt-4 dark:border-slate-700">
+          <Pagination page={paginaActual} totalPages={totalPaginas} onChange={handleCambiarPagina} />
+        </div>
+      </Modal>
     </div>
   );
 };

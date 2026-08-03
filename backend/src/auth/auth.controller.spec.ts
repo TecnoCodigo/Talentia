@@ -2,10 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { UsersService } from '../users/users.service';
 
 describe('AuthController', () => {
   let controller: AuthController;
   let authServiceMock: any;
+  let usersServiceMock: any;
 
   const mockUser = { id: 1, usuario: 'admin', nombre: 'Nelson Ruiz', rol: 'Administrador' };
 
@@ -19,11 +21,15 @@ describe('AuthController', () => {
       logout: jest.fn(),
       getEventsObservable: jest.fn(),
     };
+    usersServiceMock = {
+      create: jest.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
         { provide: AuthService, useValue: authServiceMock },
+        { provide: UsersService, useValue: usersServiceMock },
       ],
     }).compile();
 
@@ -47,11 +53,6 @@ describe('AuthController', () => {
       expect(authServiceMock.validateUser).toHaveBeenCalledWith('admin', 'Password123!');
     });
 
-    it('debe lanzar UnauthorizedException si faltan datos', async () => {
-      const req = { headers: {} };
-      await expect(controller.login(req as any, { usuario: '', clave: '' })).rejects.toThrow(UnauthorizedException);
-    });
-
     it('debe lanzar UnauthorizedException si las credenciales son inválidas', async () => {
       authServiceMock.validateUser.mockResolvedValue(null);
       const req = { headers: {} };
@@ -65,9 +66,14 @@ describe('AuthController', () => {
       const res = await controller.refresh({ userId: 1, refresh_token: 'ref' });
       expect(res).toEqual({ access_token: 'new_token' });
     });
+  });
 
-    it('debe lanzar error si faltan parametros', async () => {
-      await expect(controller.refresh({ userId: 0, refresh_token: '' })).rejects.toThrow(UnauthorizedException);
+  describe('register', () => {
+    it('debe delegar la creación al UsersService', async () => {
+      usersServiceMock.create.mockResolvedValue(mockUser);
+      const res = await controller.register({ usuario: 'recr', clave: 'Password123!', nombre: 'Recrut', correo: 'r@r.com', telefono: '123', rol: 'Reclutador' });
+      expect(res).toEqual(mockUser);
+      expect(usersServiceMock.create).toHaveBeenCalled();
     });
   });
 

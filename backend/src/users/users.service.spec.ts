@@ -7,18 +7,18 @@ describe('UsersService', () => {
   let service: UsersService;
   let repoMock: any;
 
-  const mockUser: User = {
+  const mockUser = {
     id: 1,
-    nombre: 'Nelson Ruiz',
-    usuario: 'admin',
-    clave: '$2b$10$xyz',
-    correo: 'admin@universidad.edu.ve',
-    telefono: '+58 414-1234567',
-    rol: 'Administrador',
+    nombre: 'Test User',
+    usuario: 'test',
+    clave: 'hashedpassword',
+    correo: 'test@test.com',
+    telefono: '123456789',
+    rol: 'Reclutador',
     refreshTokenHash: null,
     creadoEn: new Date(),
     actualizadoEn: new Date(),
-  };
+  } as unknown as User;
 
   beforeEach(async () => {
     repoMock = {

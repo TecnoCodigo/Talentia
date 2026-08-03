@@ -1,4 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Talento } from '../talentos/talento.entity';
+import { ReclutadorEmpresa } from '../reclutador-empresa/reclutador-empresa.entity';
 
 @Entity('usuarios')
 export class User {
@@ -20,8 +22,11 @@ export class User {
   @Column({ length: 20 })
   telefono: string;
 
-  @Column({ length: 30, default: 'Usuario' })
+  @Column({ length: 30, default: 'Reclutador' })
   rol: string;
+
+  @Column({ type: 'enum', enum: ['Activo', 'Inactivo'], default: 'Activo' })
+  estado: string;
 
   @Column({ name: 'refresh_token_hash', nullable: true, length: 255 })
   refreshTokenHash: string;
@@ -31,4 +36,10 @@ export class User {
 
   @UpdateDateColumn({ name: 'actualizado_en' })
   actualizadoEn: Date;
+
+  @OneToMany(() => Talento, (talento) => talento.registradoPor)
+  talentos: Talento[];
+
+  @OneToMany(() => ReclutadorEmpresa, (re) => re.usuario)
+  empresasAsignadas: ReclutadorEmpresa[];
 }
