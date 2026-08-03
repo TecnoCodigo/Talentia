@@ -5,7 +5,6 @@
 **Materia:** Programación 4  
 **Profesor:** Nelson Ruiz  
 **Proyecto:** Talentia - Gestor de Talentos con CRUD, dos roles (Administrador/Reclutador), asignación multiempresa de reclutadores, carga de CV con IA (Google Gemini), URLs prefirmadas temporales R2 y filtros avanzados  
-**Ponderación:** 25%
 
 ---
 
@@ -15,8 +14,6 @@
 2. **Integrante 2 (Backend):** [Ronald Vizcaya] - C.I: [ V-26.384.967 ]
 3. **Integrante 3 (Frontend UI):** [Ricardo Prado] - C.I: [ V-28.658.757 ]
 4. **Integrante 4 (Responsividad UI):** [Elias Estrabao] - C.I: [ V-26.896.160 ]
-
-Este repositorio contiene la solución completa de la actividad de Programación 4 desarrollada con **NestJS (Backend REST + JWT)**, **MySQL 8.0**, y **React + Vite + TailwindCSS (Frontend Responsive)**.
 
 ---
 
@@ -90,10 +87,10 @@ El proyecto implementa una arquitectura moderna orientada a la nube (Cloud-Nativ
 
 2. **Backend (Capa de Lógica de Negocio y API REST):** 
    - Desarrollado en **Node.js (NestJS)** con **TypeORM**.
-   - Empaquetado en Docker (almacenado en **Google Artifact Registry**) y desplegado en **Google Cloud Run** (`talentia-backend-nestjs`, máx. 1 instancia). Se autoescala de manera elástica según la demanda.
+   - Empaquetado en Docker (almacenado en **Google Artifact Registry**) y desplegado en **Google Cloud Run**. Se autoescala de manera elástica según la demanda.
 
 3. **Base de Datos (Capa de Persistencia):**
-   - Motor relacional **MySQL 8.0** desplegado y conectado a la VPC de Google Cloud (`credenly-vpc-network`).
+   - Motor relacional **MySQL 8.0** desplegado y conectado a la VPC de Google Cloud.
 
 4. **Integraciones de IA y Storage:**
    - **Google Gemini API** para extracción automática de datos estructurados a partir de PDFs de CVs.
