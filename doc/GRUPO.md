@@ -2,7 +2,7 @@
 
 **Materia:** Programación 4  
 **Profesor:** Nelson Ruiz  
-**Proyecto:** Talentia - Gestor de Talentos  
+**Proyecto:** Talentia - Gestor de Talentos CRUD
 **Ponderación:** 25%
 
 ---
