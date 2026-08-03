@@ -120,8 +120,10 @@ const TalentosListado = () => {
             isLoading={loading}
             emptyMessage="No se encontraron talentos"
             onView={(row) => navigate(`/talentos/${row.id}`)}
-            onEdit={(row) => (canEditTalento(row) ? navigate(`/talentos/${row.id}/editar`) : null)}
-            onDelete={(row) => (canEditTalento(row) ? setDeleteModal({ isOpen: true, talento: row }) : null)}
+            onEdit={(row) => navigate(`/talentos/${row.id}/editar`)}
+            onDelete={(row) => setDeleteModal({ isOpen: true, talento: row })}
+            isEditDisabled={(row) => !canEditTalento(row)}
+            isDeleteDisabled={(row) => !canEditTalento(row)}
           />
           {!loading && filtered.length > PAGE_SIZE && (
             <Pagination page={page} totalPages={totalPages} onChange={setPage} className="mt-4" />
